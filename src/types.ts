@@ -228,3 +228,163 @@ export interface InvestorDeliverable {
   metricsOrData?: { label: string; value: string; detail?: string }[];
   diagramData?: any;
 }
+
+export interface TourStep {
+  id: string;
+  stepNumber: number;
+  totalSteps: number;
+  targetSelector: string;
+  title: Record<SupportedLanguage, string>;
+  description: Record<SupportedLanguage, string>;
+  seniorSimpleText?: Record<SupportedLanguage, string>;
+  targetMode: PersonaMode;
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  badge?: Record<SupportedLanguage, string>;
+  speechAudioText?: Record<SupportedLanguage, string>;
+  actionPrompt?: Record<SupportedLanguage, string>;
+  showMeHowWorkflow?: string;
+}
+
+export interface ContextualHelpItem {
+  id: string;
+  topic: string;
+  title: Record<SupportedLanguage, string>;
+  shortAnswer: Record<SupportedLanguage, string>;
+  detailedExplanation: Record<SupportedLanguage, string>;
+  clinicalNote?: Record<SupportedLanguage, string>;
+  relatedFeature?: PersonaMode;
+}
+
+export interface FeatureGuideItem {
+  id: string;
+  iconName: string;
+  title: Record<SupportedLanguage, string>;
+  tagline: Record<SupportedLanguage, string>;
+  description: Record<SupportedLanguage, string>;
+  targetMode: PersonaMode;
+  badge?: string;
+  highlights: Record<SupportedLanguage, string[]>;
+}
+
+export interface FaqItem {
+  id: string;
+  category: 'general' | 'seniors' | 'caregivers' | 'clinicians' | 'privacy';
+  question: Record<SupportedLanguage, string>;
+  answer: Record<SupportedLanguage, string>;
+}
+
+export type EmergencyCardStatus = 'ACTIVE' | 'REVIEW_NEEDED' | 'NOT_CONFIGURED';
+
+export type EmergencyPrivacyVisibility = 'EMERGENCY_AND_PUBLIC' | 'EMERGENCY_ONLY' | 'CLINICIAN_ONLY' | 'PRIVATE';
+
+export interface EmergencyAllergy {
+  id: string;
+  allergen: string;
+  severity: 'FATAL_ANAPHYLAXIS' | 'SEVERE' | 'MODERATE';
+  reaction: string;
+}
+
+export interface EmergencyMedicalAlert {
+  id: string;
+  condition: string;
+  instructions: string;
+  isHighRisk: boolean;
+}
+
+export interface EmergencyShareToken {
+  tokenId: string;
+  label: string;
+  duration: '1_HOUR' | '24_HOURS' | 'UNTIL_REVOKED';
+  createdAt: string;
+  expiresAt: string;
+  dataIncluded: string[];
+  isRevoked: boolean;
+  accessCount: number;
+  lastAccessed?: string;
+}
+
+export interface EmergencyAccessLog {
+  id: string;
+  timestamp: string;
+  accessorType: 'EMERGENCY_RESPONDER_QR' | 'CAREGIVER' | 'RUFQA_LEADER' | 'PUBLIC_PASS';
+  deviceInfo: string;
+  locationCity?: string;
+  dataAccessedSummary: string;
+  ipMasked: string;
+}
+
+export interface EmergencyPrivacyMatrix {
+  bloodType: EmergencyPrivacyVisibility;
+  allergies: EmergencyPrivacyVisibility;
+  medicalAlerts: EmergencyPrivacyVisibility;
+  medicationSummary: EmergencyPrivacyVisibility;
+  doctorInfo: EmergencyPrivacyVisibility;
+  insuranceInfo: EmergencyPrivacyVisibility;
+  cognitiveCommunication: EmergencyPrivacyVisibility;
+  mobilityNeeds: EmergencyPrivacyVisibility;
+  religiousCultural: EmergencyPrivacyVisibility;
+  rufqaPilgrimage: EmergencyPrivacyVisibility;
+  locationSharing: 'ENABLED' | 'ON_DEMAND_ONLY' | 'DISABLED';
+}
+
+export interface EmergencyCardData {
+  id: string;
+  status: EmergencyCardStatus;
+  lastUpdated: string;
+  lastReviewedDate: string;
+  reviewIntervalDays: number;
+  fullName: string;
+  preferredName: string;
+  photoUrl: string;
+  dateOfBirth: string;
+  bloodType: string;
+  nationalIdOrPassport: string;
+  preferredLanguage: SupportedLanguage;
+  supportedEmergencyLanguages: SupportedLanguage[];
+  criticalAllergies: EmergencyAllergy[];
+  criticalMedicalAlerts: EmergencyMedicalAlert[];
+  primaryEmergencyContact: {
+    name: string;
+    relationship: string;
+    phone: string;
+    whatsapp?: string;
+    isPrimary: boolean;
+  };
+  secondaryEmergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+    whatsapp?: string;
+    isPrimary: boolean;
+  };
+  physicianContact: {
+    name: string;
+    specialty: string;
+    clinic: string;
+    phone: string;
+  };
+  cognitiveCommunicationNotes: string;
+  mobilityRequirements: string;
+  religiousCulturalNotes?: string;
+  insuranceInfo?: {
+    provider: string;
+    policyNumber: string;
+    groupNumber: string;
+    isConfigured: boolean;
+  };
+  rufqaPilgrimage?: {
+    isEnabled: boolean;
+    campaignNumber: string;
+    groupLeaderName: string;
+    groupLeaderPhone: string;
+    hotelName: string;
+    hotelRoom: string;
+    campNumberMina: string;
+    meetingPointHaram: string;
+  };
+  privacyMatrix: EmergencyPrivacyMatrix;
+  secureToken: string;
+  shareTokens: EmergencyShareToken[];
+  accessAuditLogs: EmergencyAccessLog[];
+}
+

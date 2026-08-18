@@ -14,12 +14,14 @@ import {
   ArrowRight,
   ArrowLeft,
   Users,
-  Bell
+  Bell,
+  HelpCircle
 } from 'lucide-react';
 import { SeniorProfile, CheckInRecord, Medication, SupportedLanguage, PersonaMode } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { SeniorVoiceAssistant } from './SeniorVoiceAssistant';
 import { SeniorMedicationView } from './SeniorMedicationView';
+import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 
 interface SeniorViewProps {
   senior: SeniorProfile;
@@ -31,6 +33,8 @@ interface SeniorViewProps {
   language: SupportedLanguage;
   voiceEnabled: boolean;
   totalAcbScore: number;
+  onOpenContextualHelp?: (topic: string) => void;
+  onOpenEmergencyCard?: () => void;
 }
 
 export const SeniorView: React.FC<SeniorViewProps> = ({
@@ -42,7 +46,9 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   onNavigateToMode,
   language,
   voiceEnabled,
-  totalAcbScore
+  totalAcbScore,
+  onOpenContextualHelp,
+  onOpenEmergencyCard
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -59,10 +65,23 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-teal-100 text-xs font-semibold backdrop-blur">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              {language === 'ar' ? 'رفيقك الصحي الدائم' : 'Your Continuous Cognitive Companion'}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-teal-100 text-xs font-semibold backdrop-blur">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                {language === 'ar' ? 'رفيقك الصحي الدائم' : 'Your Continuous Cognitive Companion'}
+              </span>
+              {onOpenContextualHelp && (
+                <button
+                  type="button"
+                  onClick={() => onOpenContextualHelp('voice-checkin')}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors"
+                  title="How does Wanees analyze check-ins?"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>{language === 'ar' ? 'كيف يفهمني ونيس؟' : 'How does check-in work?'}</span>
+                </button>
+              )}
+            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {t.goodMorning}
             </h1>
@@ -230,46 +249,87 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
 
             </div>
 
-            {/* Quick Link to Rufqa & Care Circle */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Quick Link to Rufqa, Care Circle & Emergency Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              
+              {/* Digital Emergency Card Quick Tile */}
+              <button
+                id="senior-view-emergency-card-btn"
+                onClick={onOpenEmergencyCard}
+                className="p-5 rounded-3xl bg-gradient-to-r from-slate-900 to-teal-950 border-2 border-teal-500/40 hover:border-teal-400 text-left text-white shadow-md transition-all flex flex-col justify-between group"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="w-11 h-11 rounded-2xl bg-teal-500/20 border border-teal-400/40 text-teal-300 flex items-center justify-center shadow-sm">
+                    <ShieldAlert className="w-6 h-6 text-amber-300" />
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30">
+                    O+ POS
+                  </span>
+                </div>
+                <div className="my-3">
+                  <h4 className="font-extrabold text-base text-white">
+                    {language === 'ar' ? 'بطاقة الطوارئ والهوية' : 'Emergency Safety Card'}
+                  </h4>
+                  <p className="text-xs text-teal-200/80 mt-0.5">
+                    {language === 'ar' ? 'الحساسية وجهات الاتصال ورمز QR' : 'Allergies, SOS & Secure QR'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs text-amber-300 font-bold">
+                  <span>{language === 'ar' ? 'عرض البطاقة الذكية' : 'View Digital ID'}</span>
+                  <ArrowIcon className="w-4 h-4 text-amber-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+
               <button
                 onClick={() => onNavigateToMode('rufqa')}
-                className="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-300 dark:border-amber-800 hover:bg-amber-500/20 text-left transition-all flex items-center justify-between group"
+                className="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-300 dark:border-amber-800 hover:bg-amber-500/20 text-left transition-all flex flex-col justify-between group"
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center justify-between w-full">
                   <div className="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
                     <Compass className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-base text-slate-900 dark:text-white">
-                      {language === 'ar' ? 'رفقة — دليل وأمان الحرم' : 'Rufqa Haram Safety'}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {language === 'ar' ? 'بطاقة السكن وباب الملك فهد' : 'Hotel card & meeting point'}
-                    </p>
-                  </div>
+                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-full">
+                    Gate 79
+                  </span>
                 </div>
-                <ArrowIcon className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform" />
+                <div className="my-3">
+                  <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                    {language === 'ar' ? 'رفقة — أمان الحرم' : 'Rufqa Haram Safety'}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {language === 'ar' ? 'بطاقة السكن والفوج' : 'Hotel card & leader'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-bold">
+                  <span>{language === 'ar' ? 'فتح نمط الحج' : 'Open Pilgrimage'}</span>
+                  <ArrowIcon className="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
+                </div>
               </button>
 
               <button
                 onClick={() => onNavigateToMode('family')}
-                className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-left transition-all flex items-center justify-between group"
+                className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-left transition-all flex flex-col justify-between group"
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center justify-between w-full">
                   <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
                     <Users className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-base text-slate-900 dark:text-white">
-                      {language === 'ar' ? 'دائرة الأهل ومريم' : 'Family Circle Portal'}
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {language === 'ar' ? 'متابعة الأبناء ومقدمي الرعاية' : 'Caregiver notes & updates'}
-                    </p>
-                  </div>
+                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">
+                    Maryam
+                  </span>
                 </div>
-                <ArrowIcon className="w-5 h-5 text-indigo-600 group-hover:translate-x-1 transition-transform" />
+                <div className="my-3">
+                  <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                    {language === 'ar' ? 'دائرة الأهل ومريم' : 'Family Circle Portal'}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {language === 'ar' ? 'متابعة الأبناء' : 'Caregiver sync'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between text-xs text-indigo-600 dark:text-indigo-400 font-bold">
+                  <span>{language === 'ar' ? 'لوحة العائلة' : 'Open Circle'}</span>
+                  <ArrowIcon className="w-4 h-4 text-indigo-600 group-hover:translate-x-1 transition-transform" />
+                </div>
               </button>
             </div>
 

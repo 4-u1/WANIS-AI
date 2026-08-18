@@ -14,7 +14,9 @@ import {
   TrendingDown,
   Info,
   Plus,
-  Trash2
+  Trash2,
+  HelpCircle,
+  Play
 } from 'lucide-react';
 import { 
   SeniorProfile, 
@@ -25,6 +27,7 @@ import {
 } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { DoctorBriefModal } from './DoctorBriefModal';
+import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 
 interface ClinicianViewProps {
   senior: SeniorProfile;
@@ -34,6 +37,8 @@ interface ClinicianViewProps {
   onUpdateMedications: (meds: Medication[]) => void;
   language: SupportedLanguage;
   totalAcbScore: number;
+  onOpenContextualHelp?: (topic: string) => void;
+  onStartDoctorBriefTour?: () => void;
 }
 
 export const ClinicianView: React.FC<ClinicianViewProps> = ({
@@ -43,7 +48,9 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
   longitudinalData,
   onUpdateMedications,
   language,
-  totalAcbScore
+  totalAcbScore,
+  onOpenContextualHelp,
+  onStartDoctorBriefTour
 }) => {
   const t = DICTIONARY[language];
   const [isBriefModalOpen, setIsBriefModalOpen] = useState(false);
@@ -87,13 +94,21 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
             <Stethoscope className="w-8 h-8" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                 Clinical Intelligence & Doctor Brief 2.0
               </h2>
               <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
                 Geriatric CDS Mode
               </span>
+              {onOpenContextualHelp && (
+                <ContextualHelpButton
+                  topicKey="doctor-brief"
+                  label={language === 'ar' ? 'ما هو ملخص الطبيب؟' : 'What is a Doctor Brief?'}
+                  language={language}
+                  onClick={onOpenContextualHelp}
+                />
+              )}
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Patient: <strong>{senior.fullName}</strong> (Age {senior.age}) • Primary Physician: {senior.primaryPhysician.name}
@@ -101,7 +116,19 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          {onStartDoctorBriefTour && (
+            <button
+              id="show-me-how-doctor-brief-btn"
+              onClick={onStartDoctorBriefTour}
+              className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700"
+              title="Interactive Step-by-Step Walkthrough"
+            >
+              <Play className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 fill-current" />
+              <span>{language === 'ar' ? 'أرني كيف أستخدم الملخص' : 'Show Me How'}</span>
+            </button>
+          )}
+
           <button
             id="open-full-doctor-brief-btn"
             onClick={() => setIsBriefModalOpen(true)}
@@ -195,9 +222,19 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
             {/* ACB Gauge Card */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                  Cumulative ACB Score
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    Cumulative ACB Score
+                  </h3>
+                  {onOpenContextualHelp && (
+                    <ContextualHelpButton
+                      topicKey="acb"
+                      label={language === 'ar' ? 'ما هو ACB؟' : 'What is ACB?'}
+                      language={language}
+                      onClick={onOpenContextualHelp}
+                    />
+                  )}
+                </div>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-extrabold ${totalAcbScore >= 3 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300' : 'bg-emerald-100 text-emerald-800'}`}>
                   Score: {totalAcbScore}
                 </span>
@@ -247,9 +284,19 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Anticholinergic Cognitive Burden (ACB) Scale & Drug Breakdown
-                </h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Anticholinergic Cognitive Burden (ACB) Scale & Drug Breakdown
+                  </h3>
+                  {onOpenContextualHelp && (
+                    <ContextualHelpButton
+                      topicKey="acb"
+                      label={language === 'ar' ? 'ما هو مقياس ACB؟' : 'What is ACB Scale?'}
+                      language={language}
+                      onClick={onOpenContextualHelp}
+                    />
+                  )}
+                </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Validated against Boustani et al. & CRISTAL pharmacopeia. Cumulative score ≥ 3 requires clinical deprescribing evaluation.
                 </p>

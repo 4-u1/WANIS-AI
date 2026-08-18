@@ -15,24 +15,30 @@ import {
   AlertCircle,
   QrCode,
   Languages,
-  CheckCircle2
+  CheckCircle2,
+  HelpCircle
 } from 'lucide-react';
 import { RufqaPilgrimState, SupportedLanguage } from '../../types';
 import { fetchRufqaAssist, speakText } from '../../services/api';
 import { DICTIONARY } from '../../data/i18n';
+import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 
 interface RufqaViewProps {
   rufqaState: RufqaPilgrimState;
   onUpdateRufqaState: (state: RufqaPilgrimState) => void;
   language: SupportedLanguage;
   voiceEnabled: boolean;
+  onOpenContextualHelp?: (topic: string) => void;
+  onOpenEmergencyCard?: () => void;
 }
 
 export const RufqaView: React.FC<RufqaViewProps> = ({
   rufqaState,
   onUpdateRufqaState,
   language,
-  voiceEnabled
+  voiceEnabled,
+  onOpenContextualHelp,
+  onOpenEmergencyCard
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -89,10 +95,23 @@ export const RufqaView: React.FC<RufqaViewProps> = ({
         <div className="absolute -right-8 -bottom-8 w-60 h-60 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
 
         <div className="relative z-10 space-y-2 max-w-xl">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-amber-100 text-xs font-semibold backdrop-blur">
-            <Compass className="w-3.5 h-3.5 text-white" />
-            {language === 'ar' ? 'رفيق الحج والعمرة الذكي' : 'Hajj & Umrah Pilgrimage Safety'}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-amber-100 text-xs font-semibold backdrop-blur">
+              <Compass className="w-3.5 h-3.5 text-white" />
+              {language === 'ar' ? 'رفيق الحج والعمرة الذكي' : 'Hajj & Umrah Pilgrimage Safety'}
+            </span>
+            {onOpenContextualHelp && (
+              <button
+                type="button"
+                onClick={() => onOpenContextualHelp('rufqa-lost')}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors"
+                title="How does location sharing and emergency beacon work?"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'كيف تعمل مشاركة الموقع؟' : 'How does location sharing work?'}</span>
+              </button>
+            )}
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             {language === 'ar' ? 'رفقة — أمانك في المشاعر المقدسة والحرم' : 'Rufqa Pilgrimage Companion'}
           </h1>
@@ -284,7 +303,17 @@ export const RufqaView: React.FC<RufqaViewProps> = ({
                   {t.showEmergencyCard}
                 </h3>
               </div>
-              <span className="text-xs text-slate-400 font-semibold">For Police / Paramedics</span>
+              {onOpenEmergencyCard && (
+                <button
+                  type="button"
+                  id="rufqa-open-full-emergency-card-btn"
+                  onClick={onOpenEmergencyCard}
+                  className="px-3 py-1 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 text-xs font-bold hover:bg-teal-100 flex items-center gap-1.5 transition-colors"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{language === 'ar' ? 'البطاقة الذكية الكاملة' : 'Full Digital ID Card'}</span>
+                </button>
+              )}
             </div>
 
             {/* Language Selector for the Card */}

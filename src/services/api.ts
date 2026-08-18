@@ -3,16 +3,17 @@ import { SupportedLanguage, TriageLevel, DoctorBriefData } from '../types';
 export interface CheckInAnalysisResponse {
   sentiment: 'positive' | 'subdued' | 'concerning' | 'distressed';
   triageLevel: TriageLevel;
+  triageReason?: string;
   summary: string;
-  moodScore: number;
-  sleepQuality: number;
-  fatigueScore: number;
+  moodScore: number | null;
+  sleepQuality: number | null;
+  fatigueScore: number | null;
   memoryConcernDetected: boolean;
-  socialEngagementScore: number;
+  socialEngagementScore: number | null;
   agentResponse: string;
   keyObservations: string[];
-  confidenceScore: number;
   recommendedAction: 'LOG_NORMAL_BASELINE' | 'GENTLE_FOLLOWUP_CHECKIN' | 'PREPARE_DOCTOR_BRIEF' | 'EMERGENCY_ESCALATION';
+  disclaimer?: string;
 }
 
 export async function analyzeSeniorCheckin(params: {
@@ -53,11 +54,12 @@ export async function analyzeSeniorCheckin(params: {
         ? 'Merci d\'avoir partagé votre journée. Je veille sur vous avec attention.'
         : 'Thank you for sharing with me. I have noted everything and will keep watching over your comfort.',
       keyObservations: [
-        'Voice check-in analyzed by WanisAI Cognitive Engine',
+        'Voice check-in analyzed by WanisAI Care Intelligence',
         isOrange ? 'Mild memory/dizziness symptom flagged for Doctor Brief' : 'Vitals and cognitive signals within baseline'
       ],
-      confidenceScore: 0.94,
-      recommendedAction: isOrange ? 'PREPARE_DOCTOR_BRIEF' : isYellow ? 'GENTLE_FOLLOWUP_CHECKIN' : 'LOG_NORMAL_BASELINE'
+      triageReason: isRed ? 'Acute distress or pain mentioned' : isOrange ? 'Memory lapse or disorientation signal' : isYellow ? 'Subdued mood or sleep issue' : 'Stable routine check-in',
+      recommendedAction: isOrange ? 'PREPARE_DOCTOR_BRIEF' : isYellow ? 'GENTLE_FOLLOWUP_CHECKIN' : 'LOG_NORMAL_BASELINE',
+      disclaimer: 'AI service observation. Not a clinical diagnosis.'
     };
   }
 }

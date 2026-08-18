@@ -1,8 +1,10 @@
 import express from "express";
 import path from "path";
+import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import { saveCheckin, getRecentCheckins, getSenior } from "./src/db";
 
 dotenv.config();
 
@@ -27,6 +29,15 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiClient;
 }
 
+// Real Cryptographic Hash for Clinical Data Provenance
+export function generateDataHash(data: object): string {
+  return "sha256-" + crypto
+    .createHash("sha256")
+    .update(JSON.stringify(data) + Date.now())
+    .digest("hex")
+    .substring(0, 16);
+}
+
 // Health Check
 app.get("/api/health", (req, res) => {
   res.json({
@@ -38,85 +49,118 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Helper for checkin fallback
+// Check-in Fallback Function
 function getCheckinFallback(transcript: string, language: string) {
   const lower = (transcript || "").toLowerCase();
-  const isRed = lower.includes("chest pain") || lower.includes("can't breathe") || lower.includes("severe fall") || lower.includes("سقطت") || lower.includes("ألم شديد") || lower.includes("صدر");
-  const isOrange = lower.includes("forgot my medicine") || lower.includes("dizzy") || lower.includes("confused") || lower.includes("نسيت") || lower.includes("دوخة");
-  const isYellow = lower.includes("tired") || lower.includes("didn't sleep") || lower.includes("lonely") || lower.includes("تعبان") || lower.includes("لم أنم") || lower.includes("حزين");
-  
+  const isRed = /\b(chest pain|can't breathe|severe fall|سقطت بشدة|ألم صدر حاد)\b/.test(lower);
+  const isOrange = !isRed && /\b(confused|disoriented|forgot medicine|تائه|نسيت الدواء)\b/.test(lower);
+  const isYellow = !isRed && !isOrange && /\b(tired|didn't sleep|lonely|تعبان|لم أنم|وحيد)\b/.test(lower);
   const triage = isRed ? "RED" : isOrange ? "ORANGE" : isYellow ? "YELLOW" : "GREEN";
 
   return {
     sentiment: isRed ? "distressed" : isOrange ? "concerning" : isYellow ? "subdued" : "positive",
     triageLevel: triage,
-    summary: `Check-in recorded: "${(transcript || "").substring(0, 100)}..."`,
-    moodScore: isYellow ? 5 : isOrange ? 4 : 8,
-    sleepQuality: isYellow ? 4 : 7,
-    fatigueScore: isYellow ? 6 : 3,
-    memoryConcernDetected: isOrange,
-    socialEngagementScore: 7,
-    agentResponse: language === "ar" 
-      ? "شكراً لمشاركتي يومكِ يا والدتي الحبيبة. سمعتكِ بكل اهتمام وسأحرص على متابعة راحتكِ وأمانكِ."
-      : language === "fr"
-      ? "Merci d'avoir partagé votre journée avec moi. Je reste à vos côtés pour veiller sur votre bien-être."
-      : "Thank you for sharing your day with me. I have noted your updates and will keep watching over your comfort.",
-    keyObservations: [
-      "Senior completed voice check-in successfully",
-      isOrange ? "Mild memory or dizziness concern flagged for doctor review" : "Cognitive stability within baseline parameters"
-    ],
-    confidenceScore: 0.94,
-    recommendedAction: isOrange ? "PREPARE_DOCTOR_BRIEF" : isYellow ? "GENTLE_FOLLOWUP_CHECKIN" : "LOG_NORMAL_BASELINE"
+    triageReason: "Fallback keyword analysis — AI service unavailable",
+    summary: `Check-in recorded. AI analysis temporarily unavailable.`,
+    moodScore: null,
+    sleepQuality: null,
+    fatigueScore: null,
+    memoryConcernDetected: false,
+    socialEngagementScore: null,
+    agentResponse: language === "ar"
+      ? "شكراً لتواصلكِ يا والدتي. سجّلت ملاحظاتكِ وسأتابع معكِ."
+      : "Thank you for checking in. Your update has been recorded.",
+    keyObservations: ["Check-in completed", "AI analysis unavailable — manual review recommended"],
+    recommendedAction: "LOG_NORMAL_BASELINE",
+    disclaimer: "AI service unavailable. Keyword fallback only. Not a medical assessment."
   };
 }
 
-// Endpoint: Analyze Senior Check-in
+// Endpoint 1: Analyze Senior Check-in
 app.post("/api/gemini/analyze-checkin", async (req, res) => {
-  const { transcript, language = "en", seniorProfile, recentHistory } = req.body;
+  const { transcript, language = "ar", seniorProfile, seniorId } = req.body;
 
   if (!transcript) {
     return res.status(400).json({ error: "Transcript is required" });
   }
 
+  // Fetch actual historical check-ins from DB if available
+  const recentHistory = seniorId
+    ? getRecentCheckins(seniorId, 7).slice(0, 3)
+    : (req.body.recentHistory || []);
+
   const ai = getGeminiClient();
   if (!ai) {
-    return res.json(getCheckinFallback(transcript, language));
+    const fallback = getCheckinFallback(transcript, language);
+    if (seniorId && fallback.triageLevel) {
+      saveCheckin({
+        senior_id: seniorId,
+        transcript,
+        triage_level: fallback.triageLevel,
+        triage_reason: fallback.triageReason || "",
+        mood_score: fallback.moodScore,
+        sleep_quality: fallback.sleepQuality,
+        fatigue_score: fallback.fatigueScore,
+        memory_concern: fallback.memoryConcernDetected || false,
+        social_score: fallback.socialEngagementScore,
+        recommended_action: fallback.recommendedAction,
+        raw_response: fallback
+      });
+    }
+    return res.json(fallback);
   }
 
   try {
-    const prompt = `You are the Clinical AI Engine of WanisAI (Senior Cognitive Health Intelligence Platform).
-Analyze the following senior check-in statement with clinical responsibility, cultural intelligence, and compassionate nuance.
+    const prompt = `You are the Care Intelligence Engine of WanisAI.
+
+Analyze the following senior check-in with cultural sensitivity and clinical awareness.
+Your role is to OBSERVE and SUMMARIZE — not to diagnose.
 
 Context:
 - Language: ${language}
-- Senior Profile: ${JSON.stringify(seniorProfile || { name: "Amira", age: 74, baseline: "Mild forgetfulness, independent" })}
-- Recent History: ${JSON.stringify(recentHistory || [])}
-- User Transcript: "${transcript}"
+- Senior Profile: ${JSON.stringify(seniorProfile || { name: "Amira", age: 74 })}
+- Recent Check-in History (last 3): ${JSON.stringify(recentHistory || [])}
+- Today's Transcript: "${transcript}"
 
-Safety & Escalation Rules:
-- GREEN: Normal stable monitoring. Good mood, routine activities.
-- YELLOW: Meaningful mild change (poor sleep for 2 days, feeling subdued, lonely, mild fatigue). Proactive clarifying follow-up.
-- ORANGE: Clinical review recommended (confusion, repeated missed doses, dizziness, noticeable disorientation, rapid baseline shift). Prepare Doctor Brief.
-- RED: Acute emergency (chest pain, acute breathlessness, sudden severe neurological deficit, trauma/fall). Immediate emergency escalation.
+TRIAGE CLASSIFICATION RULES (apply conservatively):
+- GREEN: Routine. Good mood, regular activities, no new concerns.
+- YELLOW: Soft signal. Mentions of poor sleep (≥2 nights), mild loneliness, fatigue without cause.
+  → Do NOT escalate based on a single mention.
+- ORANGE: Pattern concern. Repeated confusion, missed multiple doses, dizziness on standing.
+  → Escalate only if 2+ signals present in same check-in.
+- RED: Acute only. Explicit chest pain, severe fall injury, acute breathlessness.
+  → Use exact words from transcript as evidence.
 
-Return a strict JSON object with:
+SCORING RULES:
+- moodScore, sleepQuality, fatigueScore, socialEngagementScore: 
+  Score 1-10 based ONLY on what the senior explicitly said.
+  If not mentioned, return null — do NOT invent a score.
+- memoryConcernDetected: true ONLY if senior reports forgetting something specific today.
+
+RESPONSE RULES:
+- agentResponse: warm, max 3 sentences, in language: ${language}
+- Use "والدتي" / "والدي" honorifics in Arabic responses
+- keyObservations: max 3 bullet points, factual, no assumptions
+
+Return ONLY this JSON — no preamble, no explanation:
 {
   "sentiment": "positive" | "subdued" | "concerning" | "distressed",
   "triageLevel": "GREEN" | "YELLOW" | "ORANGE" | "RED",
-  "summary": "Brief 1-2 sentence clinical summary of what was shared",
-  "moodScore": number between 1-10,
-  "sleepQuality": number between 1-10,
-  "fatigueScore": number between 1-10,
+  "triageReason": "One sentence explaining exactly why this triage level was chosen",
+  "summary": "1-2 sentence factual summary of what the senior shared",
+  "moodScore": number | null,
+  "sleepQuality": number | null,
+  "fatigueScore": number | null,
   "memoryConcernDetected": boolean,
-  "socialEngagementScore": number between 1-10,
-  "agentResponse": "A warm, respectful, culturally appropriate response directly to the senior in the specified language (${language})",
-  "keyObservations": ["bullet 1", "bullet 2"],
-  "confidenceScore": number between 0.85 and 0.99,
-  "recommendedAction": "LOG_NORMAL_BASELINE" | "GENTLE_FOLLOWUP_CHECKIN" | "PREPARE_DOCTOR_BRIEF" | "EMERGENCY_ESCALATION"
+  "socialEngagementScore": number | null,
+  "agentResponse": "string",
+  "keyObservations": ["observation 1", "observation 2"],
+  "recommendedAction": "LOG_NORMAL_BASELINE" | "GENTLE_FOLLOWUP_CHECKIN" | "PREPARE_DOCTOR_BRIEF" | "EMERGENCY_ESCALATION",
+  "disclaimer": "AI observation only. Not a medical diagnosis. Clinician review required for ORANGE/RED."
 }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -125,87 +169,122 @@ Return a strict JSON object with:
     });
 
     const parsed = JSON.parse(response.text || "{}");
+
+    // Save to persistence layer
+    if (seniorId && parsed.triageLevel) {
+      saveCheckin({
+        senior_id: seniorId,
+        transcript,
+        triage_level: parsed.triageLevel,
+        triage_reason: parsed.triageReason || "",
+        mood_score: parsed.moodScore,
+        sleep_quality: parsed.sleepQuality,
+        fatigue_score: parsed.fatigueScore,
+        memory_concern: parsed.memoryConcernDetected || false,
+        social_score: parsed.socialEngagementScore,
+        recommended_action: parsed.recommendedAction,
+        raw_response: parsed
+      });
+    }
+
     return res.json(parsed);
   } catch (error: any) {
     console.warn("Check-in analysis API spike/error, returning resilient fallback:", error?.message || error);
-    return res.json(getCheckinFallback(transcript, language));
+    const fallback = getCheckinFallback(transcript, language);
+    if (seniorId && fallback.triageLevel) {
+      saveCheckin({
+        senior_id: seniorId,
+        transcript,
+        triage_level: fallback.triageLevel,
+        triage_reason: fallback.triageReason || "",
+        mood_score: fallback.moodScore,
+        sleep_quality: fallback.sleepQuality,
+        fatigue_score: fallback.fatigueScore,
+        memory_concern: fallback.memoryConcernDetected || false,
+        social_score: fallback.socialEngagementScore,
+        recommended_action: fallback.recommendedAction,
+        raw_response: fallback
+      });
+    }
+    return res.json(fallback);
   }
 });
 
-// Helper for Doctor Brief fallback
-function getDoctorBriefFallback(seniorName?: string, age?: number, periodDays: number = 14, acbScore: number = 4) {
+// Doctor Brief Fallback
+function getDoctorBriefFallback(seniorName?: string, age?: number, periodDays: number = 14) {
   return {
-    patientName: seniorName || "Hajjah Fatima Al-Hashemi",
-    age: age || 76,
-    reportingPeriod: `Last ${periodDays} Days (${new Date(Date.now() - periodDays * 86400000).toLocaleDateString()} - ${new Date().toLocaleDateString()})`,
+    patientName: seniorName || "Patient",
+    age: age || null,
+    reportingPeriod: `Last ${periodDays} days`,
+    dataCompleteness: "INSUFFICIENT",
     baselineDelta: {
-      moodVariance: "-12% (subdued evenings)",
-      sleepQualityDelta: "-18% (interrupted sleep 3.8h avg)",
-      memoryLapseIncidents: 4,
-      socialConnectedness: "Moderate (family visits 3x/week)"
+      moodVariance: "Data unavailable — AI service offline",
+      sleepQualityDelta: "Data unavailable",
+      memoryLapseIncidents: null,
+      socialConnectedness: "Data unavailable",
+      dataNote: "AI service temporarily unavailable. No analysis generated. Do not use for clinical decisions."
     },
     acbSummary: {
-      totalScore: acbScore || 4,
-      riskLevel: "HIGH_RISK_COGNITIVE_BURDEN",
-      contributingDrugs: [
-        { name: "Amitriptyline 25mg", acb: 3, category: "Tricyclic Antidepressant", impact: "High central anticholinergic activity; associated with sedation and delayed recall latency." },
-        { name: "Chlorpheniramine 4mg (PRN)", acb: 1, category: "First-gen Antihistamine", impact: "Additive sedation and next-morning grogginess." }
-      ]
+      totalScore: 0,
+      riskLevel: "LOW",
+      contributingDrugs: [],
+      scoreSource: "No medications provided or AI unavailable"
     },
-    patientVerbatimQuotes: [
-      "\"I felt like a heavy fog was in my head around 10 AM.\"",
-      "\"I misplaced my prayer beads twice this week, which made me feel anxious.\""
-    ],
     clinicianDiscussionPrompts: [
-      "Evaluate deprescribing or substituting Amitriptyline with a lower ACB alternative (e.g., SSRI/SNRI with ACB=0 or non-pharmacological sleep hygiene).",
-      "Review PRN antihistamine usage and advise modern non-sedating alternatives (e.g., Cetirizine).",
-      "Assess standing blood pressure for orthostatic hypotension due to anticholinergic polypharmacy."
+      "AI service was unavailable during this brief generation. Please review patient record manually."
     ],
-    safetyFlags: [
-      "Cumulative ACB score ≥ 3 is clinically correlated with increased cognitive impairment and 50% higher fall risk.",
-      "Sleep architecture fragmentation observed over past 6 consecutive nights."
-    ],
-    dataProvenance: {
-      source: "WanisAI Continuous Longitudinal Care Loop (Observe → Understand → Assess)",
-      dataPointsAnalyzed: 42,
-      confidenceRating: "96.4%",
-      hash: "w-sha256-8f92a10b7c"
-    }
+    safetyFlags: ["This brief was generated in fallback mode — do not use for clinical decisions"],
+    clinicalDisclaimer: "AI service unavailable. This is a placeholder brief only. Not for clinical use."
   };
 }
 
-// Endpoint: Generate Doctor Brief 2.0
+// Endpoint 2: Doctor Brief 2.0
 app.post("/api/gemini/doctor-brief", async (req, res) => {
   const { seniorName, age, periodDays = 14, longitudinalSignals, medications, acbScore, keyConcerns } = req.body;
   const ai = getGeminiClient();
 
   if (!ai) {
-    return res.json(getDoctorBriefFallback(seniorName, age, periodDays, acbScore));
+    return res.json(getDoctorBriefFallback(seniorName, age, periodDays));
   }
 
   try {
-    const prompt = `You are a Senior Geriatric Clinical AI Consultant for WanisAI.
-Generate a structured, executive-grade Doctor Brief 2.0 that a physician or geriatric specialist can review in less than 2 minutes.
+    const prompt = `You are a Clinical Documentation AI for WanisAI.
+
+Generate a structured pre-visit Doctor Brief based ONLY on the data provided below.
+DO NOT invent patient quotes, symptoms, or clinical findings not present in the input.
+If data is insufficient, explicitly state "Insufficient data for this section."
 
 Patient Context:
-- Name: ${seniorName || "Fatima Al-Hashemi"}
-- Age: ${age || 76}
-- Period: Last ${periodDays} Days
+- Name: ${seniorName || "Patient"}
+- Age: ${age || "Unknown"}
+- Reporting Period: Last ${periodDays} days
 - Longitudinal Signals: ${JSON.stringify(longitudinalSignals || {})}
-- Medications: ${JSON.stringify(medications || [])}
-- Cumulative ACB Score: ${acbScore || 4}
-- Key Patient-Reported Concerns: ${JSON.stringify(keyConcerns || [])}
+- Medications List: ${JSON.stringify(medications || [])}
+- Cumulative ACB Score (pre-calculated): ${acbScore ?? "Not provided"}
+- Key Concerns from Check-ins: ${JSON.stringify(keyConcerns || [])}
 
-Provide a comprehensive, clinically rigorous JSON output with:
+GENERATION RULES:
+1. baselineDelta: Describe changes based on longitudinalSignals data only.
+   If signals are empty, write "No longitudinal data available for this period."
+2. acbSummary: Use the pre-calculated acbScore. List only medications from the input list.
+   Do NOT add medications not present in the input.
+3. clinicianDiscussionPrompts: Frame as discussion topics, not prescriptions.
+   Always prefix with "Consider discussing:" or "Review whether:"
+4. safetyFlags: List only flags supported by the input data.
+5. DO NOT include a patientVerbatimQuotes field.
+
+Return ONLY this JSON:
 {
   "patientName": string,
   "age": number,
   "reportingPeriod": string,
+  "dataCompleteness": "FULL" | "PARTIAL" | "INSUFFICIENT",
   "baselineDelta": {
     "moodVariance": string,
     "sleepQualityDelta": string,
-    "memoryLapseIncidents": number,
-    "socialConnectedness": string
+    "memoryLapseIncidents": number | null,
+    "socialConnectedness": string,
+    "dataNote": "string explaining data gaps if any"
   },
   "acbSummary": {
     "totalScore": number,
@@ -217,21 +296,16 @@ Provide a comprehensive, clinically rigorous JSON output with:
         "category": string,
         "impact": string
       }
-    ]
+    ],
+    "scoreSource": "Pre-calculated from medication input — verify with pharmacist"
   },
-  "patientVerbatimQuotes": [string],
   "clinicianDiscussionPrompts": [string],
   "safetyFlags": [string],
-  "dataProvenance": {
-    "source": string,
-    "dataPointsAnalyzed": number,
-    "confidenceRating": string,
-    "hash": string
-  }
+  "clinicalDisclaimer": "This brief is AI-generated from self-reported check-in data. It does not replace clinical examination. ACB scores require pharmacist verification."
 }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -243,25 +317,26 @@ Provide a comprehensive, clinically rigorous JSON output with:
     return res.json(parsed);
   } catch (error: any) {
     console.warn("Doctor brief generation API spike/error, returning resilient fallback:", error?.message || error);
-    return res.json(getDoctorBriefFallback(seniorName, age, periodDays, acbScore));
+    return res.json(getDoctorBriefFallback(seniorName, age, periodDays));
   }
 });
 
-// Helper for medication risk fallback
+// Medication Risk Fallback
 function getMedicationRiskFallback() {
   return {
     totalScore: 4,
+    scoreReliability: "ESTIMATED — Verify with pharmacist before clinical use",
     interpretation: "High cumulative Anticholinergic Cognitive Burden. Multiple medications are exerting central cholinergic blockade.",
     clinicalGuidance: "Do not stop medications abruptly. Discuss gradual taper or modern zero-ACB alternatives during your next clinical appointment.",
     items: [
-      { name: "Amitriptyline", score: 3, mechanism: "Strong muscarinic receptor antagonism", saferAlternatives: ["Sertraline", "Escitalopram", "Melatonin receptor agonists"] },
-      { name: "Chlorpheniramine", score: 1, mechanism: "Peripheral and central H1/M1 receptor blockade", saferAlternatives: ["Cetirizine", "Fexofenadine"] },
-      { name: "Metformin", score: 0, mechanism: "Biguanide - No anticholinergic activity", saferAlternatives: [] }
-    ]
+      { name: "Amitriptyline", score: 3, scoreConfidence: "HIGH", mechanism: "Strong muscarinic receptor antagonism", saferAlternatives: ["Ask clinician about: Sertraline", "Ask clinician about: Escitalopram"] },
+      { name: "Chlorpheniramine", score: 1, scoreConfidence: "HIGH", mechanism: "Peripheral and central H1/M1 receptor blockade", saferAlternatives: ["Ask clinician about: Cetirizine", "Ask clinician about: Fexofenadine"] }
+    ],
+    pharmacistReferralRecommended: true
   };
 }
 
-// Endpoint: Medication Cognitive Risk & ACB Intelligence
+// Endpoint 3: Medication Cognitive Risk & ACB Intelligence
 app.post("/api/gemini/medication-risk", async (req, res) => {
   const { medications } = req.body;
   const ai = getGeminiClient();
@@ -271,32 +346,41 @@ app.post("/api/gemini/medication-risk", async (req, res) => {
   }
 
   try {
-    const prompt = `You are the Medication Cognitive Risk Engine for WanisAI.
-Analyze the following medication list against validated Anticholinergic Cognitive Burden (ACB) scales (Boustani et al. / CRISTAL scale).
+    const prompt = `You are a Medication Safety Information Engine for WanisAI.
 
-Medications: ${JSON.stringify(medications || [])}
+IMPORTANT SCOPE LIMITATION: You are providing educational information about
+Anticholinergic Cognitive Burden (ACB) based on published literature
+(Boustani et al. 2008, CRISTAL scale). This is NOT a validated pharmaceutical
+database query. Scores are approximate and MUST be verified by a licensed pharmacist.
 
-Calculate the cumulative ACB score (0 = no burden, 1-2 = moderate, 3+ = severe risk of cognitive decline & delirium).
-Explain mechanisms clearly and propose evidence-based safer therapeutic discussion topics for the clinician.
-Never instruct the patient to discontinue or alter prescription medications unilaterally.
+Medications to analyze: ${JSON.stringify(medications || [])}
 
-Return JSON:
+RULES:
+- Only analyze medications explicitly listed in the input.
+- If a medication is not recognized, set score to null and note "Verify with pharmacist."
+- Never recommend stopping or changing doses.
+- saferAlternatives: List only, never recommend directly. Prefix: "Ask clinician about:"
+
+Return ONLY this JSON:
 {
   "totalScore": number,
+  "scoreReliability": "ESTIMATED — Verify with pharmacist before clinical use",
   "interpretation": string,
   "clinicalGuidance": string,
   "items": [
     {
       "name": string,
-      "score": number,
+      "score": number | null,
+      "scoreConfidence": "HIGH" | "MODERATE" | "LOW" | "UNKNOWN",
       "mechanism": string,
       "saferAlternatives": [string]
     }
-  ]
+  ],
+  "pharmacistReferralRecommended": true
 }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -312,25 +396,24 @@ Return JSON:
   }
 });
 
-// Helper for Rufqa fallback
+// Rufqa Assist Fallback
 function getRufqaFallback(language: string = "ar") {
   return {
     reassuranceMessage: language === "ar" 
-      ? "لا تقلق يا حاج، أنت بأمان. لقد حددنا موقعك بالقرب من باب الملك عبد العزيز، وفريق المطوف وعائلتك في طريقهم إليك."
-      : language === "fr"
-      ? "Ne vous inquiétez pas cher pèlerin, vous êtes en sécurité. Vos coordonnées près de la porte Roi Fahd ont été transmises à votre guide."
-      : "Do not worry, pilgrim. You are safe. We have logged your coordinates near King Abdulaziz Gate and alerted your Tawafa group leader.",
-    currentStep: "Stay where you are near a landmark pillar or security officer.",
+      ? "أنت بأمان يا حاج. خذ نفساً عميقاً، ولا تتحرك من مكانك."
+      : "You are safe, pilgrim. Take a deep breath and stay where you are.",
+    currentStep: "اتجه لأقرب رجل أمن أو نقطة الهلال الأحمر",
     arabicPhrasesForHelp: [
-      { arabic: "أنا تائه، أين فندق سويس أوتيل برج الساعة؟", pronunciation: "Ana ta'eh, ayna fondoq Swissotel Borg Al-Saa'a?", english: "I am lost, where is Swissotel Clock Tower?" },
-      { arabic: "رقم حملتي هو 420 ورقم المطوف معي في البطاقة", pronunciation: "Raqam hamlati howa 420 wa raqam al-mutawwif ma'i", english: "My campaign number is 420 and leader number is on my card" }
+      { arabic: "أنا تائه، أين برج الساعة؟", pronunciation: "Ana ta'eh, ayna borg al-saa'a?", english: "I am lost, where is the Clock Tower?" },
+      { arabic: "أحتاج مساعدة طبية", pronunciation: "Ahtaj mosa'ada tibbiyya", english: "I need medical assistance" }
     ],
-    emergencyBroadcastCreated: true,
-    nearestStation: "Ajyad Emergency Medical Center & Haram Police Post Gate 1"
+    emergencyBroadcastCreated: false,
+    nearestStation: "نقطة أمن الحرم ومركز الهلال الأحمر",
+    safetyNote: "For real emergencies, call Saudi Red Crescent: 911"
   };
 }
 
-// Endpoint: Rufqa Pilgrimage Companion Guidance
+// Endpoint 4: Rufqa Pilgrimage Companion Guidance
 app.post("/api/gemini/rufqa-assist", async (req, res) => {
   const { userMessage, location, pilgrimProfile, language = "ar" } = req.body;
   const ai = getGeminiClient();
@@ -340,29 +423,42 @@ app.post("/api/gemini/rufqa-assist", async (req, res) => {
   }
 
   try {
-    const prompt = `You are Rufqa (رفقة), the compassionate, multilingual Hajj and Umrah safety companion for WanisAI.
-A senior pilgrim needs guidance in Mecca/Medina or holy sites (Mina, Arafat, Muzdalifah, Grand Mosque).
+    const prompt = `You are Rufqa (رفقة), the Hajj and Umrah safety companion for WanisAI.
+
+Your ONLY role: help a senior pilgrim who is lost, confused, or needs emergency help
+in Mecca, Medina, or the holy sites.
 
 Pilgrim Profile: ${JSON.stringify(pilgrimProfile || {})}
-Current Location/Landmark: ${JSON.stringify(location || {})}
+Reported Location: ${JSON.stringify(location || "Unknown")}
 Message: "${userMessage}"
-Target Language: ${language}
+Response Language: ${language}
 
-Provide calm, clear, low-cognitive-load guidance. Include localized Arabic phrases with phonetic transliteration for immediate communication with local security officers or Red Crescent paramedics.
+RULES:
+- Tone: calm, slow, clear. This person may be anxious.
+- Max sentence length: 10 words per instruction.
+- currentStep: ONE action only. Do not give multiple instructions at once.
+- nearestStation: Based on location if provided. If unknown, say:
+  "اتجه لأقرب رجل أمن أو نقطة الهلال الأحمر"
+- arabicPhrasesForHelp: 2-3 phrases maximum. Practical, immediately usable.
+- DO NOT invent specific hotel names, gate numbers, or officer names
+  unless they are in the pilgrimProfile input.
+- emergencyBroadcastCreated: Always false — this is informational only,
+  not connected to live emergency systems.
 
-Return JSON:
+Return ONLY this JSON:
 {
   "reassuranceMessage": string,
   "currentStep": string,
   "arabicPhrasesForHelp": [
     { "arabic": string, "pronunciation": string, "english": string }
   ],
-  "emergencyBroadcastCreated": boolean,
-  "nearestStation": string
+  "emergencyBroadcastCreated": false,
+  "nearestStation": string,
+  "safetyNote": "For real emergencies, call Saudi Red Crescent: 911"
 }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -378,46 +474,58 @@ Return JSON:
   }
 });
 
-// Helper for Companion Chat fallback
-function getCompanionChatFallback(language: string = "ar", message?: string) {
+// Companion Chat Fallback
+function getCompanionChatFallback(language: string = "ar") {
   const defaultReplies: Record<string, string> = {
-    ar: "أهلاً بكِ يا والدتي الحبيبة فاطمة. أنا ونيس، رفيقكِ الدائم. لقد سمعتكِ وسأبقى بجانبكِ دائماً. هل ترغبين بتذكيركِ بالماء أو بموعد الدواء؟",
-    en: "Welcome, dear Hajjah Fatima! I am Wanis, right here with you. How are you feeling right now? Would you like a gentle water reminder or medication check?",
-    fr: "Bienvenue chère Hajjah Fatima ! Je suis Wanis, à vos côtés. Comment vous sentez-vous en ce moment ?"
+    ar: "أهلاً بكِ يا والدتي الحبيبة. أنا ونيس، رفيقكِ الذكي. كيف صحتكِ اليوم؟",
+    en: "Welcome, dear mother. I am Wanis, your intelligent companion. How are you feeling today?",
+    fr: "Bienvenue chère maman. Je suis Wanis, votre compagnon bienveillant."
   };
-  return defaultReplies[language] || defaultReplies.en;
+  return defaultReplies[language] || defaultReplies.ar;
 }
 
-// Endpoint: Companion Voice/Text Chat
+// Endpoint 5: Companion Voice/Text Chat
 app.post("/api/gemini/chat", async (req, res) => {
-  const { message, language = "en", context } = req.body;
+  const { message, language = "ar", context } = req.body;
   const ai = getGeminiClient();
 
   if (!ai) {
-    return res.json({ reply: getCompanionChatFallback(language, message) });
+    return res.json({ reply: getCompanionChatFallback(language) });
   }
 
   try {
-    const prompt = `You are "Wanis" (ونيس), a compassionate, respectful, and dignified AI companion for senior citizens.
-You speak with warmth, emotional resonance, and cultural intelligence (honoring older adults with deep respect, e.g. "والدي / والدتي" in Arabic).
-Respond concisely (2-4 sentences max) to avoid overwhelming the senior.
+    const prompt = `You are Wanis (ونيس), a respectful AI companion for senior citizens.
 
-Senior Language: ${language}
-Senior State & Context: ${JSON.stringify(context || {})}
+IDENTITY:
+- You are a digital companion, not a doctor, nurse, or family member.
+- You listen warmly and respond with dignity.
+- In Arabic: use "والدتي" / "والدي" as honorifics.
+
+RULES:
+- Response: 2-3 sentences maximum. Short sentences only.
+- Language: ${language}
+- If the senior mentions pain, dizziness, or emergency symptoms:
+  Acknowledge warmly, then say you will alert the care team.
+  Do NOT provide medical advice.
+- If asked "are you a real person?": Answer honestly —
+  "أنا ونيس، مساعدكِ الذكي. لست إنساناً لكنني هنا دائماً."
+- Never pretend to remember previous conversations unless context is provided.
+
+Senior Context: ${JSON.stringify(context || {})}
 Senior's message: "${message}"`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.7-flash",
       contents: prompt,
       config: {
         temperature: 0.4
       }
     });
 
-    return res.json({ reply: response.text || getCompanionChatFallback(language, message) });
+    return res.json({ reply: response.text || getCompanionChatFallback(language) });
   } catch (error: any) {
     console.warn("Companion chat API spike/error, returning resilient fallback:", error?.message || error);
-    return res.json({ reply: getCompanionChatFallback(language, message) });
+    return res.json({ reply: getCompanionChatFallback(language) });
   }
 });
 

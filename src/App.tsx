@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   PersonaMode, 
   SupportedLanguage, 
@@ -9,7 +9,9 @@ import {
   RufqaPilgrimState, 
   ConsentMatrix, 
   DoctorBriefData, 
-  TriageLevel 
+  TriageLevel,
+  ContextualHelpItem,
+  EmergencyCardData
 } from './types';
 import { 
   MOCK_SENIOR_PROFILE, 
@@ -22,6 +24,8 @@ import {
   MOCK_CONSENT_MATRIX, 
   MOCK_DOCTOR_BRIEF 
 } from './data/mockData';
+import { INITIAL_EMERGENCY_CARD_DATA } from './data/emergencyCardData';
+import { CONTEXTUAL_HELP_ITEMS } from './data/walkthroughData';
 import { Navbar } from './components/Navbar';
 import { SeniorView } from './components/SeniorMode/SeniorView';
 import { SeniorCheckinModal } from './components/SeniorMode/SeniorCheckinModal';
@@ -33,6 +37,12 @@ import { OrchestratorView } from './components/OrchestratorMode/OrchestratorView
 import { InvestorView } from './components/InvestorMode/InvestorView';
 import { ConsentModal } from './components/ConsentModal';
 import { EmergencyModal } from './components/EmergencyModal';
+import { EmergencyCardModal } from './components/EmergencyCard/EmergencyCardModal';
+import { GuidedTourOverlay } from './components/Walkthrough/GuidedTourOverlay';
+import { HowToUseModal } from './components/Walkthrough/HowToUseModal';
+import { ContextualHelpModal } from './components/Walkthrough/ContextualHelpModal';
+import { FirstTimeWelcomeModal } from './components/Walkthrough/FirstTimeWelcomeModal';
+import { WaneesProductIntroductionModal } from './components/Walkthrough/WaneesProductIntroductionModal';
 
 export default function App() {
   // Navigation & Persona State
@@ -48,12 +58,51 @@ export default function App() {
   const [rufqaState, setRufqaState] = useState<RufqaPilgrimState>(MOCK_RUFQA_STATE);
   const [consentMatrix, setConsentMatrix] = useState<ConsentMatrix>(MOCK_CONSENT_MATRIX);
   const [doctorBrief, setDoctorBrief] = useState<DoctorBriefData>(MOCK_DOCTOR_BRIEF);
+  const [emergencyCardData, setEmergencyCardData] = useState<EmergencyCardData>(INITIAL_EMERGENCY_CARD_DATA);
 
   // Modals
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isDoctorBriefModalOpen, setIsDoctorBriefModalOpen] = useState(false);
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
+  const [isEmergencyCardModalOpen, setIsEmergencyCardModalOpen] = useState(false);
+
+  // Walkthrough & Onboarding States
+  const [isTourActive, setIsTourActive] = useState<boolean>(false);
+  const [isHowToUseOpen, setIsHowToUseOpen] = useState<boolean>(false);
+  const [selectedHelpItem, setSelectedHelpItem] = useState<ContextualHelpItem | null>(null);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(false);
+  const [isProductIntroOpen, setIsProductIntroOpen] = useState<boolean>(false);
+
+  // Check first time visit for welcome greeting modal
+  useEffect(() => {
+    const isDismissed = localStorage.getItem('wanis_welcome_dismissed');
+    const isCompleted = localStorage.getItem('wanis_tour_completed');
+    if (!isDismissed && !isCompleted) {
+      const timer = setTimeout(() => {
+        setIsProductIntroOpen(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleOpenContextualHelp = (topicKey: string) => {
+    const item = CONTEXTUAL_HELP_ITEMS[topicKey] || Object.values(CONTEXTUAL_HELP_ITEMS).find(i => i.id === topicKey || i.topic === topicKey);
+    if (item) {
+      setSelectedHelpItem(item);
+    }
+  };
+
+  const handleStartShowMeHow = (workflow: string) => {
+    if (workflow === 'doctor-brief') {
+      setCurrentMode('clinician');
+      setTimeout(() => {
+        setIsDoctorBriefModalOpen(true);
+      }, 200);
+    } else if (workflow === 'rufqa') {
+      setCurrentMode('rufqa');
+    }
+  };
 
   // Computed ACB Total Score
   const totalAcbScore = useMemo(() => {
@@ -166,6 +215,8 @@ export default function App() {
         onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
         onOpenConsentModal={() => setIsConsentModalOpen(true)}
         onTriggerEmergency={() => setIsEmergencyModalOpen(true)}
+        onOpenHowToUse={() => setIsHowToUseOpen(true)}
+        onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -182,6 +233,8 @@ export default function App() {
             language={language}
             voiceEnabled={voiceEnabled}
             totalAcbScore={totalAcbScore}
+            onOpenContextualHelp={handleOpenContextualHelp}
+            onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
           />
         )}
 
@@ -208,6 +261,10 @@ export default function App() {
             onUpdateMedications={setMedications}
             language={language}
             totalAcbScore={totalAcbScore}
+            onOpenContextualHelp={handleOpenContextualHelp}
+            onStartDoctorBriefTour={() => {
+              setIsDoctorBriefModalOpen(true);
+            }}
           />
         )}
 
@@ -217,6 +274,8 @@ export default function App() {
             onUpdateRufqaState={setRufqaState}
             language={language}
             voiceEnabled={voiceEnabled}
+            onOpenContextualHelp={handleOpenContextualHelp}
+            onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
           />
         )}
 
@@ -262,6 +321,70 @@ export default function App() {
         isOpen={isEmergencyModalOpen}
         onClose={() => setIsEmergencyModalOpen(false)}
         senior={senior}
+        language={language}
+      />
+
+      {/* Multilingual Digital Emergency ID & Safety Card Modal */}
+      <EmergencyCardModal
+        isOpen={isEmergencyCardModalOpen}
+        onClose={() => setIsEmergencyCardModalOpen(false)}
+        cardData={emergencyCardData}
+        onUpdateCardData={setEmergencyCardData}
+        language={language}
+        onSelectLanguage={setLanguage}
+        voiceEnabled={voiceEnabled}
+        medications={medications}
+      />
+
+      {/* Interactive Platform Guided Tour Spotlight Overlay */}
+      <GuidedTourOverlay
+        isActive={isTourActive}
+        onClose={() => setIsTourActive(false)}
+        language={language}
+        currentMode={currentMode}
+        onSwitchMode={setCurrentMode}
+        onOpenCheckinModal={() => setIsCheckinModalOpen(true)}
+        voiceEnabledByDefault={voiceEnabled}
+        onOpenProductIntroduction={() => setIsProductIntroOpen(true)}
+      />
+
+      {/* Primary How to Use & Onboarding Center Modal */}
+      <HowToUseModal
+        isOpen={isHowToUseOpen}
+        onClose={() => setIsHowToUseOpen(false)}
+        language={language}
+        onStartTour={() => setIsTourActive(true)}
+        onStartShowMeHow={handleStartShowMeHow}
+        onNavigateToMode={setCurrentMode}
+        voiceEnabled={voiceEnabled}
+        onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
+        onOpenContextualHelp={handleOpenContextualHelp}
+        onOpenProductIntroduction={() => setIsProductIntroOpen(true)}
+      />
+
+      {/* Contextual Understanding Modal (? Popups) */}
+      <ContextualHelpModal
+        isOpen={!!selectedHelpItem}
+        onClose={() => setSelectedHelpItem(null)}
+        item={selectedHelpItem}
+        language={language}
+        onNavigateToFeature={setCurrentMode}
+        voiceEnabled={voiceEnabled}
+      />
+
+      {/* Comprehensive Wanees Product Introduction & Philosophy Modal */}
+      <WaneesProductIntroductionModal
+        isOpen={isProductIntroOpen}
+        onClose={() => setIsProductIntroOpen(false)}
+        onStartTour={() => setIsTourActive(true)}
+        language={language}
+      />
+
+      {/* First-Time Welcome Modal Greeting (Fallback) */}
+      <FirstTimeWelcomeModal
+        isOpen={isWelcomeModalOpen}
+        onClose={() => setIsWelcomeModalOpen(false)}
+        onStartTour={() => setIsTourActive(true)}
         language={language}
       />
 

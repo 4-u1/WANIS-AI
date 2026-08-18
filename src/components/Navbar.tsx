@@ -11,7 +11,9 @@ import {
   Volume2, 
   VolumeX, 
   Lock, 
-  Bell
+  Bell,
+  HelpCircle,
+  Sparkles
 } from 'lucide-react';
 import { PersonaMode, SupportedLanguage, TriageLevel } from '../types';
 import { DICTIONARY } from '../data/i18n';
@@ -26,6 +28,8 @@ interface NavbarProps {
   onToggleVoice: () => void;
   onOpenConsentModal: () => void;
   onTriggerEmergency: () => void;
+  onOpenHowToUse: () => void;
+  onOpenEmergencyCard: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -37,7 +41,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   voiceEnabled,
   onToggleVoice,
   onOpenConsentModal,
-  onTriggerEmergency
+  onTriggerEmergency,
+  onOpenHowToUse,
+  onOpenEmergencyCard
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -90,8 +96,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Quick Actions / Triage / SOS / Settings */}
           <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Prominent "How to Use" Button */}
+            <button
+              id="btn-how-to-use-navbar"
+              onClick={onOpenHowToUse}
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:hover:bg-teal-900/80 dark:text-teal-200 border border-teal-200 dark:border-teal-800 shadow-2xs transition-all hover:scale-102 active:scale-95 group"
+              title="Platform Walkthrough, Guided Tour & Help"
+            >
+              <HelpCircle className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:rotate-12 transition-transform" />
+              <span className="font-extrabold">{language === 'ar' ? '؟ دليل الاستخدام' : language === 'fr' ? '? Comment utiliser' : '? How to Use'}</span>
+            </button>
+
             {/* Triage Level Indicator */}
-            <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${triageBadgeColor}`}>
+            <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${triageBadgeColor}`}>
               <span className={`w-2.5 h-2.5 rounded-full ${triageLevel === 'GREEN' ? 'bg-emerald-500' : triageLevel === 'YELLOW' ? 'bg-amber-500' : triageLevel === 'ORANGE' ? 'bg-orange-500' : 'bg-rose-500'}`}></span>
               <span>{triageLabel}</span>
             </div>
@@ -132,6 +149,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               ))}
             </div>
+
+            {/* Digital Emergency Card Button */}
+            <button
+              id="emergency-card-nav-btn"
+              onClick={onOpenEmergencyCard}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-900 to-emerald-900 hover:from-teal-800 hover:to-emerald-800 text-white border border-teal-500/40 shadow-sm transition-transform active:scale-95 group"
+              title="Digital Safety Card & Medical ID"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">{language === 'ar' ? 'بطاقة الطوارئ' : 'Emergency Card'}</span>
+            </button>
 
             {/* Emergency SOS Button */}
             <button

@@ -32,6 +32,7 @@ import {
   PersonaMode 
 } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
+import { CaregiverDigestCard } from './CaregiverDigestCard';
 
 interface FamilyViewProps {
   senior: SeniorProfile;
@@ -188,158 +189,16 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </div>
       </div>
 
-      {/* Triage Alert Box if Yellow/Orange */}
-      {senior.currentTriage !== 'GREEN' && (
-        <div className="p-4 sm:p-5 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-amber-950 dark:text-amber-200">
-                {language === 'ar' ? 'تنبيه سريري استرشادي: تغير في نمط النوم والعبء الدوائي' : 'Meaningful Change Flagged (Yellow Triage)'}
-              </h4>
-              <p className="text-xs text-amber-800 dark:text-amber-300/90 mt-0.5 leading-relaxed">
-                {language === 'ar' 
-                  ? 'لوحظ تقطع في نوم الوالدة مع ثقل صباحي ودوار خفيف. يتزامن ذلك مع إضافة مضاد الحساسية إلى دواء أميتريبتيلين (مجموع ACB = 4). تم تجهيز موجز الطبيب 2.0 لمراجعته.'
-                  : 'Sleep fragmentation and mild morning dizziness detected over past 4 days, coinciding with PRN antihistamine (Cumulative ACB = 4). Doctor Brief 2.0 prepared for Dr. Sarah.'}
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => onNavigateToMode('clinician')}
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 shadow-sm"
-          >
-            {language === 'ar' ? 'مراجعة التقرير السريري' : 'Review Clinical Brief'}
-          </button>
-        </div>
-      )}
-
-      {/* Natural Language Longitudinal Summary Card (Sleep & Social Engagement) */}
-      {longitudinalSummary && (
-        <div id="family-longitudinal-summary-card" className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/90 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 shadow-xs">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
-                    {language === 'ar' ? 'التحليل الذكي الطولي: ملخص النوم والتفاعل الاجتماعي' : 'Longitudinal Wellbeing Digest: Sleep & Social Engagement'}
-                  </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
-                    {language === 'ar' ? 'تفسير ذكي باللغة الطبيعية' : 'Natural Language AI Synthesis'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {language === 'ar' ? `قراءة تحليلية لتغيرات الأنماط السلوكية خلال آخر ${longitudinalData.length} يوماً` : `Empathetic interpretation of behavioral patterns across the last ${longitudinalData.length} evaluated days`}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-center">
-              <span className="text-[11px] font-medium text-slate-400">
-                {language === 'ar' ? 'موثوقية البيانات: 96.4%' : 'Data Provenance: 96.4%'}
-              </span>
-            </div>
-          </div>
-
-          {/* Holistic Natural Language Summary Banner */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200/80 dark:border-teal-800/60 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-            <p className="flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
-              <span>{longitudinalSummary.holisticNarrative}</span>
-            </p>
-          </div>
-
-          {/* Side-by-side Dual Trajectory Panels: Sleep vs Social */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            
-            {/* 1. Sleep Trajectory Summary */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                    <Moon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                      {language === 'ar' ? 'نمط واستمرارية النوم' : 'Sleep Continuity & Duration'}
-                    </h4>
-                    <span className="text-[10px] text-slate-400">
-                      {language === 'ar' ? `المعدل الحالي: ${longitudinalSummary.latest.sleepHours} ساعات (الأساس: ${longitudinalSummary.first.sleepHours} س)` : `Current: ${longitudinalSummary.latest.sleepHours}h (Baseline: ${longitudinalSummary.first.sleepHours}h)`}
-                    </span>
-                  </div>
-                </div>
-
-                <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 ${
-                  longitudinalSummary.isSleepDeclining
-                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                }`}>
-                  {longitudinalSummary.isSleepDeclining ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-                  <span>{longitudinalSummary.sleepDelta > 0 ? `+${longitudinalSummary.sleepDelta}h` : `${longitudinalSummary.sleepDelta}h`} ({longitudinalSummary.sleepPercent}%)</span>
-                </span>
-              </div>
-
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                {longitudinalSummary.sleepSummary}
-              </p>
-
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">
-                  {language === 'ar' ? 'جودة النوم المسجلة:' : 'Sleep Restfulness Rating:'}
-                </span>
-                <span className="font-bold text-slate-700 dark:text-slate-300">
-                  {longitudinalSummary.latest.sleepQuality}/10 <span className="text-[10px] text-slate-400">({language === 'ar' ? 'سابقاً' : 'was'} {longitudinalSummary.first.sleepQuality}/10)</span>
-                </span>
-              </div>
-            </div>
-
-            {/* 2. Social Engagement Trajectory Summary */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                      {language === 'ar' ? 'التفاعل والتواصل الاجتماعي' : 'Social Engagement & Connectedness'}
-                    </h4>
-                    <span className="text-[10px] text-slate-400">
-                      {language === 'ar' ? `المعدل الحالي: ${longitudinalSummary.latest.socialEngagementScore}/10 (الأساس: ${longitudinalSummary.first.socialEngagementScore}/10)` : `Current: ${longitudinalSummary.latest.socialEngagementScore}/10 (Baseline: ${longitudinalSummary.first.socialEngagementScore}/10)`}
-                    </span>
-                  </div>
-                </div>
-
-                <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 ${
-                  longitudinalSummary.isSocialDeclining
-                    ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
-                    : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                }`}>
-                  {longitudinalSummary.isSocialDeclining ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-                  <span>{longitudinalSummary.socialDelta > 0 ? `+${longitudinalSummary.socialDelta}` : `${longitudinalSummary.socialDelta}`} pts ({longitudinalSummary.socialPercent}%)</span>
-                </span>
-              </div>
-
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                {longitudinalSummary.socialSummary}
-              </p>
-
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">
-                  {language === 'ar' ? 'حالة التجاوب الأسري:' : 'Care Circle Responsiveness:'}
-                </span>
-                <span className="font-bold text-teal-600 dark:text-teal-400">
-                  {language === 'ar' ? 'تجاوب صباحي دافئ' : 'Active Morning Response'}
-                </span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* TOP HERO: Dedicated High-Contrast Caregiver Digest Card */}
+      <CaregiverDigestCard
+        careLoopEvents={careLoopEvents}
+        senior={senior}
+        latestCheckin={latestCheckin}
+        language={language}
+        totalAcbScore={totalAcbScore}
+        onOpenDoctorBrief={onOpenDoctorBrief}
+        onNavigateToMode={onNavigateToMode}
+      />
 
       {/* Sub Tabs */}
       <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-md">
@@ -369,7 +228,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
           
           {/* Main 2-Columns: Today's Summary & 8-Stage Care Loop */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Daily Digest Card */}
             {latestCheckin && (
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
@@ -527,7 +386,135 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
 
       {/* TAB 2: 14-DAY TRENDS & CHARTS */}
       {activeSubTab === 'trends' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div className="space-y-6">
+          {/* Natural Language Longitudinal Summary Card (Sleep & Social Engagement) */}
+          {longitudinalSummary && (
+            <div id="family-longitudinal-summary-card" className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/90 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 shadow-xs">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                        {language === 'ar' ? 'التحليل الذكي الطولي: ملخص النوم والتفاعل الاجتماعي' : 'Longitudinal Wellbeing Digest: Sleep & Social Engagement'}
+                      </h3>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                        {language === 'ar' ? 'تفسير ذكي باللغة الطبيعية' : 'Natural Language AI Synthesis'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {language === 'ar' ? `قراءة تحليلية لتغيرات الأنماط السلوكية خلال آخر ${longitudinalData.length} يوماً` : `Empathetic interpretation of behavioral patterns across the last ${longitudinalData.length} evaluated days`}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <span className="text-[11px] font-medium text-slate-400">
+                    {language === 'ar' ? 'موثوقية البيانات: 96.4%' : 'Data Provenance: 96.4%'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Holistic Natural Language Summary Banner */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200/80 dark:border-teal-800/60 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
+                <p className="flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                  <span>{longitudinalSummary.holisticNarrative}</span>
+                </p>
+              </div>
+
+              {/* Side-by-side Dual Trajectory Panels: Sleep vs Social */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                
+                {/* 1. Sleep Trajectory Summary */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <Moon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                          {language === 'ar' ? 'نمط واستمرارية النوم' : 'Sleep Continuity & Duration'}
+                        </h4>
+                        <span className="text-[10px] text-slate-400">
+                          {language === 'ar' ? `المعدل الحالي: ${longitudinalSummary.latest.sleepHours} ساعات (الأساس: ${longitudinalSummary.first.sleepHours} س)` : `Current: ${longitudinalSummary.latest.sleepHours}h (Baseline: ${longitudinalSummary.first.sleepHours}h)`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 ${
+                      longitudinalSummary.isSleepDeclining
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    }`}>
+                      {longitudinalSummary.isSleepDeclining ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
+                      <span>{longitudinalSummary.sleepDelta > 0 ? `+${longitudinalSummary.sleepDelta}h` : `${longitudinalSummary.sleepDelta}h`} ({longitudinalSummary.sleepPercent}%)</span>
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {longitudinalSummary.sleepSummary}
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">
+                      {language === 'ar' ? 'جودة النوم المسجلة:' : 'Sleep Restfulness Rating:'}
+                    </span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      {longitudinalSummary.latest.sleepQuality}/10 <span className="text-[10px] text-slate-400">({language === 'ar' ? 'سابقاً' : 'was'} {longitudinalSummary.first.sleepQuality}/10)</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* 2. Social Engagement Trajectory Summary */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                          {language === 'ar' ? 'التفاعل والتواصل الاجتماعي' : 'Social Engagement & Connectedness'}
+                        </h4>
+                        <span className="text-[10px] text-slate-400">
+                          {language === 'ar' ? `المعدل الحالي: ${longitudinalSummary.latest.socialEngagementScore}/10 (الأساس: ${longitudinalSummary.first.socialEngagementScore}/10)` : `Current: ${longitudinalSummary.latest.socialEngagementScore}/10 (Baseline: ${longitudinalSummary.first.socialEngagementScore}/10)`}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 ${
+                      longitudinalSummary.isSocialDeclining
+                        ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
+                        : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                    }`}>
+                      {longitudinalSummary.isSocialDeclining ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
+                      <span>{longitudinalSummary.socialDelta > 0 ? `+${longitudinalSummary.socialDelta}` : `${longitudinalSummary.socialDelta}`} pts ({longitudinalSummary.socialPercent}%)</span>
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {longitudinalSummary.socialSummary}
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">
+                      {language === 'ar' ? 'حالة التجاوب الأسري:' : 'Care Circle Responsiveness:'}
+                    </span>
+                    <span className="font-bold text-teal-600 dark:text-teal-400">
+                      {language === 'ar' ? 'تجاوب صباحي دافئ' : 'Active Morning Response'}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -631,6 +618,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
 
           </div>
         </div>
+      </div>
       )}
 
       {/* TAB 3: CARE CIRCLE */}

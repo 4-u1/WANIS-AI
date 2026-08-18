@@ -43,6 +43,13 @@ import { HowToUseModal } from './components/Walkthrough/HowToUseModal';
 import { ContextualHelpModal } from './components/Walkthrough/ContextualHelpModal';
 import { FirstTimeWelcomeModal } from './components/Walkthrough/FirstTimeWelcomeModal';
 import { WaneesProductIntroductionModal } from './components/Walkthrough/WaneesProductIntroductionModal';
+import { MedicationToastNotification, ActiveMedicationReminder } from './components/Notifications/MedicationToastNotification';
+import { MedicationReminderCenterModal } from './components/Notifications/MedicationReminderCenterModal';
+import { 
+  notificationAudio, 
+  speakMedicationReminder, 
+  sendBrowserPushNotification 
+} from './services/notificationService';
 
 export default function App() {
   // Navigation & Persona State
@@ -60,6 +67,10 @@ export default function App() {
   const [doctorBrief, setDoctorBrief] = useState<DoctorBriefData>(MOCK_DOCTOR_BRIEF);
   const [emergencyCardData, setEmergencyCardData] = useState<EmergencyCardData>(INITIAL_EMERGENCY_CARD_DATA);
 
+  // In-App Medication Reminders & Toast Queue State
+  const [activeReminders, setActiveReminders] = useState<ActiveMedicationReminder[]>([]);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState<boolean>(false);
+
   // Modals
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isDoctorBriefModalOpen, setIsDoctorBriefModalOpen] = useState(false);
@@ -74,6 +85,11 @@ export default function App() {
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(false);
   const [isProductIntroOpen, setIsProductIntroOpen] = useState<boolean>(false);
 
+  // Pending medications count
+  const pendingMedications = useMemo(() => {
+    return medications.filter(m => !m.isTakenToday);
+  }, [medications]);
+
   // Check first time visit for welcome greeting modal
   useEffect(() => {
     const isDismissed = localStorage.getItem('wanis_welcome_dismissed');
@@ -82,6 +98,20 @@ export default function App() {
       const timer = setTimeout(() => {
         setIsProductIntroOpen(true);
       }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  // Automatic gentle reminder simulation for untaken scheduled medications
+  useEffect(() => {
+    const untakenMeds = medications.filter(m => !m.isTakenToday);
+    if (untakenMeds.length > 0) {
+      const timer = setTimeout(() => {
+        const targetMed = untakenMeds.find(m => m.acbScore > 0) || untakenMeds[0];
+        if (targetMed) {
+          handleTriggerReminderToast(targetMed);
+        }
+      }, 2400);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -102,6 +132,63 @@ export default function App() {
     } else if (workflow === 'rufqa') {
       setCurrentMode('rufqa');
     }
+  };
+
+  // Trigger In-App & Push Medication Reminder
+  const handleTriggerReminderToast = (medication: Medication) => {
+    setActiveReminders(prev => {
+      if (prev.some(r => r.medication.id === medication.id)) return prev;
+      const newReminder: ActiveMedicationReminder = {
+        id: `reminder-${medication.id}-${Date.now()}`,
+        medication,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isUrgent: medication.acbScore >= 2
+      };
+      return [newReminder, ...prev];
+    });
+
+    // Play chime & speak prompt
+    notificationAudio.playReminderChime();
+    if (voiceEnabled) {
+      speakMedicationReminder(medication, language);
+    }
+
+    // Browser push notification
+    sendBrowserPushNotification(medication, language, () => {
+      handleToggleMedicationTaken(medication.id);
+    });
+
+    // Append to Continuous 8-Stage Care Loop Audit Log
+    const reminderEvent: CareLoopEvent = {
+      id: `evt-med-reminder-${Date.now()}`,
+      stage: 'RECOMMEND',
+      title: 'Smart Medication Adherence Prompt Dispatched',
+      description: `In-App Toast and Push alert dispatched for scheduled dose: ${medication.name} (${medication.dosage}).`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      triage: medication.acbScore >= 2 ? 'YELLOW' : 'GREEN',
+      confidenceScore: 0.99,
+      actor: 'AI_ORCHESTRATOR',
+      consentTier: 'PRIVATE',
+      requiresHumanReview: false
+    };
+    setCareLoopEvents(prev => [reminderEvent, ...prev]);
+  };
+
+  const handleDismissReminder = (reminderId: string) => {
+    setActiveReminders(prev => prev.filter(r => r.id !== reminderId));
+  };
+
+  const handleSnoozeReminder = (reminderId: string, medId: string) => {
+    setActiveReminders(prev => prev.filter(r => r.id !== reminderId));
+    setTimeout(() => {
+      setMedications(currentMeds => {
+        const freshMed = currentMeds.find(m => m.id === medId);
+        if (freshMed && !freshMed.isTakenToday) {
+          handleTriggerReminderToast(freshMed);
+        }
+        return currentMeds;
+      });
+    }, 15000);
   };
 
   // Computed ACB Total Score
@@ -170,9 +257,14 @@ export default function App() {
 
   // Toggle Medication Taken
   const handleToggleMedicationTaken = (id: string) => {
+    let justTaken = false;
+    let targetMedName = '';
+
     setMedications(prev => prev.map(m => {
       if (m.id === id) {
         const nextState = !m.isTakenToday;
+        justTaken = nextState;
+        targetMedName = m.name;
         return {
           ...m,
           isTakenToday: nextState,
@@ -181,6 +273,26 @@ export default function App() {
       }
       return m;
     }));
+
+    // Clear active toasts for this medication
+    setActiveReminders(prev => prev.filter(r => r.medication.id !== id));
+
+    if (justTaken) {
+      notificationAudio.playSuccessChime();
+      const adherenceEvent: CareLoopEvent = {
+        id: `evt-med-taken-${Date.now()}`,
+        stage: 'ACT',
+        title: 'Medication Adherence Confirmed',
+        description: `Senior marked ${targetMedName} as taken today. Adherence state updated.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        triage: 'GREEN',
+        confidenceScore: 1.0,
+        actor: 'SENIOR',
+        consentTier: 'FAMILY_SUPPORT',
+        requiresHumanReview: false
+      };
+      setCareLoopEvents(prev => [adherenceEvent, ...prev]);
+    }
   };
 
   // Trigger Simulated 8-Stage Cycle
@@ -217,6 +329,8 @@ export default function App() {
         onTriggerEmergency={() => setIsEmergencyModalOpen(true)}
         onOpenHowToUse={() => setIsHowToUseOpen(true)}
         onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
+        pendingMedicationsCount={pendingMedications.length}
+        onOpenReminderCenter={() => setIsReminderModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -235,6 +349,8 @@ export default function App() {
             totalAcbScore={totalAcbScore}
             onOpenContextualHelp={handleOpenContextualHelp}
             onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
+            onTriggerReminderToast={handleTriggerReminderToast}
+            onOpenReminderModal={() => setIsReminderModalOpen(true)}
           />
         )}
 
@@ -336,6 +452,18 @@ export default function App() {
         medications={medications}
       />
 
+      {/* Medication Smart Reminder Center Modal */}
+      <MedicationReminderCenterModal
+        isOpen={isReminderModalOpen}
+        onClose={() => setIsReminderModalOpen(false)}
+        medications={medications}
+        onToggleMedicationTaken={handleToggleMedicationTaken}
+        onTriggerReminderToast={handleTriggerReminderToast}
+        language={language}
+        voiceEnabled={voiceEnabled}
+        onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
+      />
+
       {/* Interactive Platform Guided Tour Spotlight Overlay */}
       <GuidedTourOverlay
         isActive={isTourActive}
@@ -386,6 +514,16 @@ export default function App() {
         onClose={() => setIsWelcomeModalOpen(false)}
         onStartTour={() => setIsTourActive(true)}
         language={language}
+      />
+
+      {/* In-App Medication Toast Notification Queue */}
+      <MedicationToastNotification
+        activeReminders={activeReminders}
+        onMarkAsTaken={handleToggleMedicationTaken}
+        onDismiss={handleDismissReminder}
+        onSnooze={handleSnoozeReminder}
+        language={language}
+        voiceEnabled={voiceEnabled}
       />
 
       {/* Minimalist Footnote */}

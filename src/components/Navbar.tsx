@@ -30,6 +30,8 @@ interface NavbarProps {
   onTriggerEmergency: () => void;
   onOpenHowToUse: () => void;
   onOpenEmergencyCard: () => void;
+  pendingMedicationsCount?: number;
+  onOpenReminderCenter?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -43,7 +45,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenConsentModal,
   onTriggerEmergency,
   onOpenHowToUse,
-  onOpenEmergencyCard
+  onOpenEmergencyCard,
+  pendingMedicationsCount = 0,
+  onOpenReminderCenter
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -123,6 +127,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
+
+            {/* Medication Reminder & Push Notifications Button */}
+            {onOpenReminderCenter && (
+              <button
+                id="medication-reminders-nav-btn"
+                onClick={onOpenReminderCenter}
+                className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                  pendingMedicationsCount > 0
+                    ? 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700'
+                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                }`}
+                title={language === 'ar' ? 'تنبيهات الأدوية وإشعارات الجرعات' : 'Medication Reminders & Push Alerts'}
+              >
+                <Bell className={`w-3.5 h-3.5 ${pendingMedicationsCount > 0 ? 'text-amber-600 dark:text-amber-400 animate-bounce' : 'text-slate-500'}`} />
+                <span className="hidden md:inline">{language === 'ar' ? 'تنبيهات الأدوية' : 'Meds'}</span>
+                {pendingMedicationsCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-amber-500 text-white font-black text-[10px] flex items-center justify-center -mr-0.5">
+                    {pendingMedicationsCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Consent & Privacy Button */}
             <button

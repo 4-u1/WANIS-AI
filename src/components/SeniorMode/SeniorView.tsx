@@ -35,12 +35,14 @@ interface SeniorViewProps {
   totalAcbScore: number;
   onOpenContextualHelp?: (topic: string) => void;
   onOpenEmergencyCard?: () => void;
+  onTriggerReminderToast?: (med: Medication) => void;
+  onOpenReminderModal?: () => void;
 }
 
 export const SeniorView: React.FC<SeniorViewProps> = ({
   senior,
   latestCheckIn,
-  medications,
+  medications = [],
   onOpenCheckinModal,
   onToggleMedicationTaken,
   onNavigateToMode,
@@ -48,11 +50,14 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   voiceEnabled,
   totalAcbScore,
   onOpenContextualHelp,
-  onOpenEmergencyCard
+  onOpenEmergencyCard,
+  onTriggerReminderToast,
+  onOpenReminderModal
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
   const [activeTab, setActiveTab] = useState<'overview' | 'meds' | 'chat'>('overview');
+  const safeMedications = medications || [];
 
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
@@ -232,20 +237,31 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
               </div>
 
               {/* Medication Compliance */}
-              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('meds')}
+                className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 text-left transition-all hover:border-teal-400 group cursor-pointer"
+                title="View today's medications and reminders"
+              >
                 <div className="flex items-center justify-between text-teal-600">
-                  <Pill className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Meds</span>
+                  <Pill className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                    <Bell className="w-3 h-3 text-teal-500" />
+                    Meds
+                  </span>
                 </div>
                 <div>
                   <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {medications.filter(m => m.isTakenToday).length}/{medications.length}
+                    {safeMedications.filter(m => m.isTakenToday).length}/{safeMedications.length}
                   </span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {language === 'ar' ? 'جرعات اليوم المكتملة' : 'Doses taken today'}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center justify-between">
+                    <span>{language === 'ar' ? 'جرعات اليوم المكتملة' : 'Doses taken today'}</span>
+                    <span className="text-[11px] text-teal-600 dark:text-teal-400 font-bold group-hover:underline">
+                      {language === 'ar' ? 'عرض التنبيهات ←' : 'View →'}
+                    </span>
                   </p>
                 </div>
-              </div>
+              </button>
 
             </div>
 
@@ -349,6 +365,8 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
           onToggleTaken={onToggleMedicationTaken}
           language={language}
           totalAcbScore={totalAcbScore}
+          onTriggerReminderToast={onTriggerReminderToast}
+          onOpenReminderModal={onOpenReminderModal}
         />
       )}
 

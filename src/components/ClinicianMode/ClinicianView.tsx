@@ -322,7 +322,7 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
                       </div>
                       <p className="text-xs text-slate-600 dark:text-slate-300">{med.clinicalExplanation}</p>
 
-                      {med.saferAlternatives.length > 0 && (
+                      {med.saferAlternatives && med.saferAlternatives.length > 0 && (
                         <div className="pt-1 flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-bold uppercase text-teal-700 dark:text-teal-400">Safer Alternatives:</span>
                           {med.saferAlternatives.map((alt, i) => (

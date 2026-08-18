@@ -124,8 +124,9 @@ WANIS-AI/
 **هندسة الأوامر والاستخدام المسؤول للذكاء الاصطناعي**  
 بإشراف  
 **الهيئة السعودية للبيانات والذكاء الاصطناعي (SDAIA)**  
+**أكاديمية سدايا — [@SDAIAAcademy](https://github.com/SDAIAAcademy)**  
 
-*This project was developed as part of the Prompt Engineering & Responsible AI Use workshop by Saudi Data and AI Authority (SDAIA) Academy — Summer of the Future 2026*
+*This project was developed as part of the Prompt Engineering & Responsible AI Use workshop by Saudi Data and AI Authority (SDAIA) Academy ([@SDAIAAcademy](https://github.com/SDAIAAcademy)) — Summer of the Future 2026*
 
 </div>
 

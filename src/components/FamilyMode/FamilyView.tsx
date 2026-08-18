@@ -41,6 +41,7 @@ import { DailyWellnessSummaryModal } from './DailyWellnessSummaryModal';
 import { DailyWellnessSummaryCard } from './DailyWellnessSummaryCard';
 import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
 import { RecentAlertsHistorySection } from './RecentAlertsHistorySection';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface FamilyViewProps {
   senior: SeniorProfile;
@@ -57,6 +58,8 @@ interface FamilyViewProps {
   onToggleMedicationTaken?: (id: string) => void;
   onTriggerMedicationReminder?: (med: Medication) => void;
   onSimulateTriageShift?: (targetTriage: 'YELLOW' | 'RED') => void;
+  onToggleNotificationRead?: (id: string) => void;
+  onMarkAllNotificationsAsRead?: () => void;
 }
 
 export const FamilyView: React.FC<FamilyViewProps> = ({
@@ -73,7 +76,9 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
   totalAcbScore,
   onToggleMedicationTaken,
   onTriggerMedicationReminder,
-  onSimulateTriageShift
+  onSimulateTriageShift,
+  onToggleNotificationRead,
+  onMarkAllNotificationsAsRead
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -205,8 +210,13 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
     <div id="family-portal-container" className="space-y-6 animate-fadeIn">
       
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        {/* Subtle Watermark Logo in background */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 opacity-5 pointer-events-none hidden lg:block">
+          <WaneesLogo variant="icon" size="2xl" />
+        </div>
+
+        <div className="flex items-center gap-4 relative z-10">
           <div className="relative">
             <img
               src={senior.photoUrl}
@@ -224,14 +234,16 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
                 {senior.age} y/o • Independent Living
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              {language === 'ar' ? 'بوابة رعاية العائلة — متابعة مستمرة وتنسيق فوري' : 'Family Care Circle — Continuous Wellbeing & Peace of Mind'}
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+              <span className="font-semibold text-teal-700 dark:text-teal-400 font-sans tracking-wide">WANEES</span>
+              <span>•</span>
+              <span>{language === 'ar' ? 'بوابة رعاية العائلة — متابعة مستمرة وتنسيق فوري' : 'Family Care Circle — Continuous Wellbeing & Peace of Mind'}</span>
             </p>
           </div>
         </div>
 
         {/* Action CTAs: Daily Wellness Summary & Doctor Brief */}
-        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap relative z-10">
           <button
             id="family-open-daily-summary-btn"
             onClick={() => setIsDailySummaryOpen(true)}
@@ -814,6 +826,8 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
             language={language}
             onSimulateShift={onSimulateTriageShift}
             onOpenDoctorBrief={onOpenDoctorBrief}
+            onToggleNotificationRead={onToggleNotificationRead}
+            onMarkAllNotificationsAsRead={onMarkAllNotificationsAsRead}
           />
         </div>
       )}

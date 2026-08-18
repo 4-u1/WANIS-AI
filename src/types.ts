@@ -32,6 +32,22 @@ export interface Medication {
   imageUrl?: string;
 }
 
+export interface MedicationIntakeRecord {
+  id: string;
+  medicationId: string;
+  medicationName: string;
+  dosage: string;
+  genericName?: string;
+  takenAt: string;
+  timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'bedtime';
+  acbScore: number;
+  indication: string;
+  status: 'TAKEN_ON_TIME' | 'TAKEN_DELAYED' | 'SELF_REPORTED' | 'CONFIRMED_BY_CAREGIVER';
+  loggedVia: 'VOICE_CHECKIN' | 'IN_APP_TOAST' | 'MANUAL_MODAL' | 'SYSTEM_SCHEDULE';
+  imageUrl?: string;
+  notes?: string;
+}
+
 export interface LongitudinalMetrics {
   date: string;
   moodScore: number; // 1-10

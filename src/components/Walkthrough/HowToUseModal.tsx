@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { SupportedLanguage, PersonaMode } from '../../types';
 import { FEATURE_GUIDE_ITEMS, FAQ_ITEMS, CONTEXTUAL_HELP_ITEMS } from '../../data/walkthroughData';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface HowToUseModalProps {
   isOpen: boolean;
@@ -91,21 +92,27 @@ export const HowToUseModal: React.FC<HowToUseModalProps> = ({
         className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ${isRtl ? 'rtl' : 'ltr'}`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-700 text-white relative">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white relative">
           <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1.5 max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-teal-100 text-xs font-semibold backdrop-blur">
-                <HelpCircle className="w-3.5 h-3.5 text-amber-300" />
-                <span>{language === 'ar' ? 'مركز المساعدة ودليل الاستخدام' : 'Onboarding & Help Center'}</span>
+            <div className="flex items-start gap-4">
+              <div className="p-1 rounded-2xl bg-white/10 border border-teal-400/30 text-teal-200 hidden sm:flex items-center justify-center shadow-inner">
+                <WaneesLogo variant="icon" size="sm" />
               </div>
-              <h1 id="how-to-use-title" className="text-xl sm:text-2xl font-extrabold tracking-tight">
-                {language === 'ar' ? 'دليل استخدام ونيس' : 'How to Use Wanees'}
-              </h1>
-              <p className="text-teal-100 text-xs sm:text-sm leading-relaxed">
-                {language === 'ar' 
-                  ? 'دليلك السريع لتحقيق أقصى استفادة من رفيقك الصحي الذكي ونيس.'
-                  : 'A quick guide to help you get the most from your Wanees companion.'}
-              </p>
+              <div className="space-y-1.5 max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-teal-100 text-xs font-semibold backdrop-blur">
+                  <HelpCircle className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{language === 'ar' ? 'مركز المساعدة ودليل الاستخدام' : 'Onboarding & Help Center'}</span>
+                </div>
+                <h1 id="how-to-use-title" className="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                  <span>{language === 'ar' ? 'دليل استخدام ونيس' : 'How to Use Wanees'}</span>
+                  <span className="text-sm font-bold text-teal-300 font-arabic">| ونيـس</span>
+                </h1>
+                <p className="text-teal-100 text-xs sm:text-sm leading-relaxed">
+                  {language === 'ar' 
+                    ? 'دليلك السريع لتحقيق أقصى استفادة من رفيقك الصحي الذكي ونيس — منظومة العناية والأمان.'
+                    : 'A quick guide to help you get the most from Wanees — AI Care & Safety Ecosystem.'}
+                </p>
+              </div>
             </div>
 
             <button

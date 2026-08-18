@@ -11,6 +11,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { SupportedLanguage } from '../../types';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface FirstTimeWelcomeModalProps {
   isOpen: boolean;
@@ -66,15 +67,25 @@ export const FirstTimeWelcomeModal: React.FC<FirstTimeWelcomeModalProps> = ({
 
         {/* Hero Branding */}
         <div className="text-center space-y-3 pt-2">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-500 text-white flex items-center justify-center mx-auto shadow-xl shadow-teal-600/25">
-            <HeartHandshake className="w-9 h-9" />
+          <div className="flex justify-center">
+            <div className="p-2 rounded-3xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-md">
+              <WaneesLogo variant="icon" size="xl" />
+            </div>
           </div>
 
           <div className="space-y-1">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800 inline-block">
-              {language === 'ar' ? 'أهلاً بك في منصة ونيس' : 'Welcome to Wanees'}
-            </span>
-            <h2 id="welcome-modal-title" className="text-2xl font-extrabold text-slate-900 dark:text-white">
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-xl font-extrabold tracking-wider text-[#102A4D] dark:text-white uppercase font-sans">
+                WANEES
+              </span>
+              <span className="text-sm font-bold text-teal-700 dark:text-teal-400 font-arabic">
+                | ونـيـس
+              </span>
+            </div>
+            <p className="text-[11px] font-bold text-teal-800 dark:text-teal-300 tracking-wider uppercase">
+              AI CARE &amp; SAFETY ECOSYSTEM
+            </p>
+            <h2 id="welcome-modal-title" className="text-2xl font-extrabold text-slate-900 dark:text-white pt-2">
               {language === 'ar' ? 'هل ترغب بجولة تعريفية سريعة؟' : 'Would you like a quick tour?'}
             </h2>
           </div>

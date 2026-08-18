@@ -181,6 +181,45 @@ export function speakMedicationReminder(medication: Medication, language: Suppor
 }
 
 /**
+ * Text-to-Speech Medication Adherence History Pronunciation
+ */
+export function speakMedicationHistoryRecord(medName: string, dosage: string, takenAt: string, language: SupportedLanguage) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+  try {
+    window.speechSynthesis.cancel();
+
+    let text = '';
+    let langCode = 'ar-SA';
+
+    if (language === 'ar') {
+      text = `تم تأكيد أخذ دواء ${medName}، الجرعة ${dosage}، في تمام الساعة ${takenAt}.`;
+      langCode = 'ar-SA';
+    } else if (language === 'fr') {
+      text = `Dose de ${medName}, ${dosage}, confirmée prise aujourd'hui à ${takenAt}.`;
+      langCode = 'fr-FR';
+    } else {
+      text = `Dose of ${medName}, ${dosage}, confirmed taken today at ${takenAt}.`;
+      langCode = 'en-US';
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = langCode;
+    utterance.rate = 0.92;
+
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang.startsWith(langCode.substring(0, 2)));
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn('Speech synthesis failed:', err);
+  }
+}
+
+/**
  * Browser Push Notification API Integration
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {

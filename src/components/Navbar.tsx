@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  HeartHandshake, 
+  HeartHandshake,
   ShieldAlert, 
   Users, 
   Stethoscope, 
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PersonaMode, SupportedLanguage, TriageLevel } from '../types';
 import { DICTIONARY } from '../data/i18n';
+import { WaneesLogo } from './WaneesLogo';
 
 interface NavbarProps {
   currentMode: PersonaMode;
@@ -71,28 +72,32 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18">
           
-          {/* Brand & Logo */}
+          {/* Brand & Official Logo */}
           <div className="flex items-center gap-3">
             <button 
               id="brand-logo-btn"
               onClick={() => onSelectMode('senior')}
-              className="flex items-center gap-3 text-left focus:outline-none group"
+              className="flex items-center gap-3 text-left focus:outline-none group cursor-pointer transition-transform active:scale-98"
+              title="WANEES - AI Care & Safety Ecosystem"
             >
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-teal-700/20 group-hover:scale-105 transition-transform">
-                <HeartHandshake className="w-6 h-6" />
+              <div className="p-1 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs group-hover:shadow-md group-hover:border-teal-400 dark:group-hover:border-teal-600 transition-all flex items-center justify-center">
+                <WaneesLogo variant="icon" size="sm" />
               </div>
-              <div>
+              <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    {t.appName}
+                  <span className="text-xl font-extrabold tracking-wider text-[#102A4D] dark:text-white font-sans uppercase">
+                    WANEES
                   </span>
-                  <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                    v2.4 Pro
+                  <span className="text-sm font-bold text-teal-700 dark:text-teal-400 font-arabic">
+                    ونـيـس
+                  </span>
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                    Pro
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-                  {t.subtag}
-                </p>
+                <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-teal-800 dark:text-teal-400 tracking-wider uppercase hidden sm:flex">
+                  <span>AI CARE &amp; SAFETY ECOSYSTEM</span>
+                </div>
               </div>
             </button>
           </div>

@@ -79,8 +79,8 @@ export default function App() {
   const [triageNotificationHistory, setTriageNotificationHistory] = useState<CareCircleTriageNotification[]>([
     {
       id: 'mock-triage-prev-1',
-      timestamp: 'Yesterday, 04:15 PM',
-      createdAt: Date.now() - 86400000,
+      timestamp: 'Today, 04:15 PM',
+      createdAt: Date.now() - 3600000,
       previousTriage: 'GREEN',
       newTriage: 'YELLOW',
       seniorName: 'فاطمة الهاشمي',
@@ -92,12 +92,12 @@ export default function App() {
         { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
       ],
       keyObservations: ['Postural dizziness noted', 'Sleep duration < 5h', 'Hydration intake low'],
-      isRead: true
+      isRead: false
     },
     {
       id: 'mock-triage-prev-2',
-      timestamp: '3 days ago, 08:30 PM',
-      createdAt: Date.now() - 259200000,
+      timestamp: 'Yesterday, 08:30 PM',
+      createdAt: Date.now() - 86400000,
       previousTriage: 'GREEN',
       newTriage: 'YELLOW',
       seniorName: 'فاطمة الهاشمي',
@@ -108,12 +108,12 @@ export default function App() {
         { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
       ],
       keyObservations: ['Evening fatigue spike', 'Medication reminder confirmed verbally'],
-      isRead: true
+      isRead: false
     },
     {
       id: 'mock-triage-prev-3',
-      timestamp: '6 days ago, 11:20 AM',
-      createdAt: Date.now() - 518400000,
+      timestamp: '4 days ago, 11:20 AM',
+      createdAt: Date.now() - 345600000,
       previousTriage: 'GREEN',
       newTriage: 'YELLOW',
       seniorName: 'فاطمة الهاشمي',
@@ -128,8 +128,8 @@ export default function App() {
     },
     {
       id: 'mock-triage-prev-4',
-      timestamp: '12 days ago, 02:40 PM',
-      createdAt: Date.now() - 1036800000,
+      timestamp: '10 days ago, 02:40 PM',
+      createdAt: Date.now() - 864000000,
       previousTriage: 'YELLOW',
       newTriage: 'RED',
       seniorName: 'فاطمة الهاشمي',
@@ -144,6 +144,21 @@ export default function App() {
       isRead: true
     }
   ]);
+
+  // Toggle Alert Read Status
+  const handleToggleNotificationRead = (id: string) => {
+    setTriageNotificationHistory(prev => prev.map(notif => {
+      if (notif.id === id) {
+        return { ...notif, isRead: !notif.isRead };
+      }
+      return notif;
+    }));
+  };
+
+  // Mark All Alerts as Read
+  const handleMarkAllNotificationsAsRead = () => {
+    setTriageNotificationHistory(prev => prev.map(notif => ({ ...notif, isRead: true })));
+  };
 
   // Modals
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
@@ -568,6 +583,8 @@ export default function App() {
             onToggleMedicationTaken={handleToggleMedicationTaken}
             onTriggerMedicationReminder={handleTriggerReminderToast}
             onSimulateTriageShift={handleSimulateTriageShift}
+            onToggleNotificationRead={handleToggleNotificationRead}
+            onMarkAllNotificationsAsRead={handleMarkAllNotificationsAsRead}
           />
         )}
 

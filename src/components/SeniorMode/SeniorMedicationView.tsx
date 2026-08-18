@@ -128,7 +128,7 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
               className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/20 transition-colors"
             >
               <Bell className="w-4 h-4 text-teal-300" />
-              <span>{language === 'ar' ? 'مركز التنبيهات' : 'Reminder Settings'}</span>
+              <span>{language === 'ar' ? 'مركز التنبيهات والسجل' : 'Reminders & History'}</span>
             </button>
           )}
         </div>

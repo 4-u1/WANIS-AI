@@ -26,6 +26,7 @@ import {
 import { EmergencyCardData, SupportedLanguage, Medication } from '../../types';
 import { EMERGENCY_TRANSLATIONS } from '../../data/emergencyCardData';
 import { speakText } from '../../services/api';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface DigitalWalletCardProps {
   cardData: EmergencyCardData;
@@ -136,16 +137,17 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
             {/* Top Bar: Wanees Seal & Digital Card Type */}
             <div className="relative z-10 flex items-start justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shadow-md">
-                  <ShieldAlert className="w-5 h-5 text-amber-300" />
+                <div className="p-1 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center shadow-md">
+                  <WaneesLogo variant="icon" size="sm" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-black text-sm tracking-wide text-white uppercase">Wanees</span>
+                    <span className="font-black text-sm tracking-wide text-white uppercase font-sans">WANEES</span>
+                    <span className="text-xs font-bold text-amber-300 font-arabic">ونـيـس</span>
                     <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/30">EMERGENCY ID</span>
                   </div>
-                  <p className="text-[10px] text-teal-200/80 font-medium">
-                    {isPilgrimageMode ? 'Pilgrim Safety Pass • Rufqa' : 'Digital Health & Safety Profile'}
+                  <p className="text-[10px] text-teal-200/90 font-bold uppercase tracking-wider">
+                    {isPilgrimageMode ? 'Pilgrim Safety Pass • Rufqa' : 'AI Care & Safety Ecosystem'}
                   </p>
                 </div>
               </div>

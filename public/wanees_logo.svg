@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="wLeft" x1="60" y1="180" x2="330" y2="525" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#1E3A5F"/>
+      <stop offset="45%" stopColor="#102A4D"/>
+      <stop offset="100%" stopColor="#0B486B"/>
+    </linearGradient>
+    <linearGradient id="wRight" x1="270" y1="510" x2="540" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#0E5A77"/>
+      <stop offset="40%" stopColor="#148F96"/>
+      <stop offset="85%" stopColor="#2EAF92"/>
+      <stop offset="100%" stopColor="#48C9A6"/>
+    </linearGradient>
+    <linearGradient id="wCenter" x1="300" y1="225" x2="300" y2="315" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#22A396"/>
+      <stop offset="100%" stopColor="#136B7E"/>
+    </linearGradient>
+    <linearGradient id="wGold" x1="150" y1="240" x2="465" y2="105" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#D4AF7A"/>
+      <stop offset="50%" stopColor="#E5C799"/>
+      <stop offset="100%" stopColor="#C9A265"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Golden Celestial Arch -->
+  <path d="M 156 264 A 186 186 0 0 1 468 168" stroke="url(#wGold)" stroke-width="13.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Celestial Stars -->
+  <path d="M 462 108 C 462 118.5 468 126 477 126 C 468 126 462 133.5 462 144 C 462 133.5 456 126 447 126 C 456 126 462 118.5 462 108 Z" fill="#D4AF7A"/>
+  <path d="M 432 78 C 432 84 436.5 88.5 442.5 88.5 C 436.5 88.5 432 93 432 99 C 432 93 427.5 88.5 421.5 88.5 C 427.5 88.5 432 84 432 78 Z" fill="#E5C799"/>
+  <path d="M 396 120 C 396 124.5 399 127.5 403.5 127.5 C 399 127.5 396 130.5 396 135 C 396 130.5 393 127.5 388.5 127.5 C 393 127.5 396 124.5 396 120 Z" fill="#C9A265"/>
+
+  <!-- Head Dot -->
+  <circle cx="300" cy="252" r="42" fill="url(#wCenter)"/>
+
+  <!-- Left Supporting Arm -->
+  <path d="M 192 228 C 162 252 138 297 138 342 C 138 384 165 411 207 411 C 246 411 285 375 324 438 C 342 468 351 495 345 522 C 336 537 315 540 297 531 C 261 516 216 459 186 414 C 147 357 120 294 144 234 C 162 186 207 198 225 225 Z" fill="url(#wLeft)"/>
+
+  <!-- Right Senior Profile Arm -->
+  <path d="M 324 438 C 366 372 411 318 438 252 C 456 210 459 174 444 162 C 426 150 402 168 396 189 C 402 204 420 219 420 237 C 420 246 408 255 402 264 C 399 268.5 405 276 408 280.5 C 409.5 283.5 402 291 396 297 C 390 303 378 312 378 321 C 378 336 393 345 384 366 C 372 399 345 441 315 474 C 306 483 297 492 297 498 C 306 495 315 471 324 438 Z" fill="url(#wRight)"/>
+</svg>

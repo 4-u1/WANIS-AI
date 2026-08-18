@@ -29,6 +29,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { SupportedLanguage } from '../../types';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface WaneesProductIntroductionModalProps {
   isOpen: boolean;
@@ -125,10 +126,10 @@ export const WaneesProductIntroductionModal: React.FC<WaneesProductIntroductionM
         className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh] ${isRtl ? 'rtl' : 'ltr'}`}
       >
         {/* Header Bar */}
-        <div className="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white p-5 sm:p-6 relative flex flex-wrap items-center justify-between gap-4 border-b border-teal-700/50">
+        <div className="bg-gradient-to-r from-teal-950 via-[#102A4D] to-slate-900 text-white p-5 sm:p-6 relative flex flex-wrap items-center justify-between gap-4 border-b border-teal-700/50">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-teal-500/30 border border-teal-400/40 text-teal-200 flex items-center justify-center shadow-inner">
-              <HeartHandshake className="w-7 h-7 text-teal-300" />
+            <div className="p-1 rounded-2xl bg-white/10 border border-teal-400/30 text-teal-200 flex items-center justify-center shadow-inner">
+              <WaneesLogo variant="icon" size="md" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -136,7 +137,7 @@ export const WaneesProductIntroductionModal: React.FC<WaneesProductIntroductionM
                   {language === 'ar' ? 'مقدمة المنصة' : language === 'fr' ? 'Introduction Produit' : 'Product Introduction'}
                 </span>
                 <span className="text-xs text-teal-300/80 font-medium">
-                  {language === 'ar' ? 'منظومة العناية المعرفية والتواصل' : 'Cognitive Wellbeing & Connected Care'}
+                  {language === 'ar' ? 'منظومة العناية المعرفية والتواصل' : 'AI Care & Safety Ecosystem'}
                 </span>
               </div>
               <h1 id="wanees-intro-title" className="text-xl sm:text-2xl font-extrabold tracking-tight text-white mt-0.5">
@@ -217,6 +218,11 @@ export const WaneesProductIntroductionModal: React.FC<WaneesProductIntroductionM
           {/* SECTION 1: VISION & PURPOSE */}
           {activeSection === 'story' && (
             <div className="space-y-6 animate-fadeIn">
+              {/* Grand Brand Visual Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-50 to-teal-50/50 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-center gap-6 shadow-xs text-center sm:text-left rtl:sm:text-right">
+                <WaneesLogo variant="full" size="lg" showTagline={true} />
+              </div>
+
               {/* Supporting Headline Banner */}
               <div className="p-4 sm:p-5 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/80 dark:border-teal-800/80">
                 <p className="text-base sm:text-lg font-bold text-teal-900 dark:text-teal-200 leading-snug">

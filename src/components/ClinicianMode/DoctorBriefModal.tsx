@@ -14,6 +14,7 @@ import {
   Stethoscope
 } from 'lucide-react';
 import { DoctorBriefData, SupportedLanguage } from '../../types';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface DoctorBriefModalProps {
   isOpen: boolean;
@@ -59,19 +60,19 @@ Data Provenance: ${brief.dataProvenance.confidenceRating} confidence, Hash: ${br
         
         {/* Header Action Bar */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center">
-              <Stethoscope className="w-6 h-6" />
+          <div className="flex items-center gap-3.5">
+            <div className="p-1.5 rounded-2xl bg-slate-800 border border-slate-700/80 shadow-xs flex items-center justify-center">
+              <WaneesLogo variant="icon" size="sm" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold">WanisAI Doctor Brief 2.0</h2>
+                <h2 className="text-lg font-extrabold tracking-wide">WANEES Doctor Brief 2.0</h2>
                 <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-teal-500 text-slate-950 uppercase">
                   Executive 2-Min Review
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Validated Geriatric Cognitive & Pharmacotherapy Summary
+              <p className="text-xs text-teal-300/80 font-medium">
+                AI Care &amp; Safety Ecosystem • Validated Geriatric Cognitive Summary
               </p>
             </div>
           </div>
@@ -108,6 +109,15 @@ Data Provenance: ${brief.dataProvenance.confidenceRating} confidence, Hash: ${br
         {/* Printable / Viewable Clinical Summary Body */}
         <div ref={printRef} className="p-6 sm:p-8 space-y-6 max-h-[80vh] overflow-y-auto text-slate-800 dark:text-slate-200">
           
+          {/* Official Document Brand Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+            <WaneesLogo variant="horizontal" size="sm" showEcosystemSubtitle={true} />
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Document Type</span>
+              <span className="text-xs font-extrabold text-teal-800 dark:text-teal-300">CLINICAL COGNITIVE SUMMARY</span>
+            </div>
+          </div>
+
           {/* Patient Bio & Period Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs">
             <div>

@@ -22,6 +22,7 @@ import { DICTIONARY } from '../../data/i18n';
 import { SeniorVoiceAssistant } from './SeniorVoiceAssistant';
 import { SeniorMedicationView } from './SeniorMedicationView';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
+import { WaneesLogo } from '../WaneesLogo';
 
 interface SeniorViewProps {
   senior: SeniorProfile;
@@ -65,15 +66,18 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
     <div id="senior-view-container" className="space-y-6 animate-fadeIn">
       
       {/* Warm Greeting Hero Banner */}
-      <section className="bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-teal-900/10 relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+      <section className="bg-gradient-to-r from-teal-800 via-teal-700 to-emerald-800 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-teal-900/10 relative overflow-hidden">
+        {/* Subtle Watermark Logo */}
+        <div className="absolute -right-8 -bottom-8 w-56 h-56 opacity-10 pointer-events-none">
+          <WaneesLogo variant="icon" size="2xl" />
+        </div>
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-teal-100 text-xs font-semibold backdrop-blur">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                {language === 'ar' ? 'رفيقك الصحي الدائم' : 'Your Continuous Cognitive Companion'}
+                {language === 'ar' ? 'ونيس — رفيقك الصحي الدائم' : 'Wanees — Your Daily Companion'}
               </span>
               {onOpenContextualHelp && (
                 <button

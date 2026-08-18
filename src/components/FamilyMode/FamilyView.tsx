@@ -20,7 +20,9 @@ import {
   TrendingUp,
   ArrowDownRight,
   BedDouble,
-  Info
+  Info,
+  Bell,
+  Radio
 } from 'lucide-react';
 import { 
   SeniorProfile, 
@@ -38,6 +40,7 @@ import { CaregiverDigestCard } from './CaregiverDigestCard';
 import { DailyWellnessSummaryModal } from './DailyWellnessSummaryModal';
 import { DailyWellnessSummaryCard } from './DailyWellnessSummaryCard';
 import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
+import { RecentAlertsHistorySection } from './RecentAlertsHistorySection';
 
 interface FamilyViewProps {
   senior: SeniorProfile;
@@ -112,7 +115,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
     }
   };
 
-  const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'trends' | 'circle'>('timeline');
+  const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'alerts' | 'trends' | 'circle'>('timeline');
   const [quickNote, setQuickNote] = useState('');
   const [notesList, setNotesList] = useState<Array<{ author: string; text: string; time: string }>>([
     {
@@ -274,24 +277,38 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
       />
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-md">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-2xl overflow-x-auto">
         <button
           onClick={() => setActiveSubTab('timeline')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeSubTab === 'timeline' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'timeline' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
         >
           {language === 'ar' ? 'اليوميات والاطمئنان' : 'Care Timeline'}
         </button>
         <button
+          onClick={() => setActiveSubTab('alerts')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${activeSubTab === 'alerts' ? 'bg-amber-400 dark:bg-amber-400 text-amber-950 shadow-xs font-black' : 'text-slate-600 dark:text-slate-400'}`}
+        >
+          <Bell className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'سجل التنبيهات' : 'Recent Alerts'}</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+            activeSubTab === 'alerts' 
+              ? 'bg-amber-950 text-amber-100' 
+              : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+          }`}>
+            {triageNotifications.length}
+          </span>
+        </button>
+        <button
           onClick={() => setActiveSubTab('trends')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeSubTab === 'trends' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'trends' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
         >
           {language === 'ar' ? 'المؤشرات (14 يوماً)' : '14-Day Trends'}
         </button>
         <button
           onClick={() => setActiveSubTab('circle')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeSubTab === 'circle' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'circle' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
         >
-          {language === 'ar' ? 'فريق الرعاية والملاحظات' : 'Care Circle & Notes'}
+          {language === 'ar' ? 'فريق الرعاية' : 'Care Circle'}
         </button>
       </div>
 
@@ -452,8 +469,66 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
 
             </div>
 
+            {/* Quick Alerts Snapshot Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                    {language === 'ar' ? 'آخر التنبيهات السريرية' : 'Recent Triage Alerts'}
+                  </h4>
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                  {triageNotifications.length} {language === 'ar' ? 'مسجل' : 'Logged'}
+                </span>
+              </div>
+
+              {triageNotifications.length > 0 ? (
+                <div className="p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-800/40 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="inline-flex items-center gap-1 font-bold text-amber-800 dark:text-amber-300">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>{triageNotifications[0].previousTriage} ➔ {triageNotifications[0].newTriage}</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">{triageNotifications[0].timestamp}</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                    {triageNotifications[0].reason}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  {language === 'ar' ? 'لا توجد تنبيهات سلبية — حالة الوالدة مستقرة.' : 'No negative shifts logged.'}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setActiveSubTab('alerts')}
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <span>{language === 'ar' ? 'عرض سجل التنبيهات الكامل والاتجاهات' : 'View Full Alerts History & Trends'}</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
           </div>
 
+        </div>
+      )}
+
+      {/* TAB 2: RECENT ALERTS HISTORY & TRENDS */}
+      {activeSubTab === 'alerts' && (
+        <div className="space-y-6">
+          <RecentAlertsHistorySection
+            notifications={triageNotifications}
+            seniorName={senior.preferredName || senior.fullName}
+            language={language}
+            onSimulateShift={onSimulateTriageShift}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
         </div>
       )}
 
@@ -731,6 +806,15 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
               </div>
             ))}
           </div>
+
+          {/* Longitudinal Recent Alerts History */}
+          <RecentAlertsHistorySection
+            notifications={triageNotifications}
+            seniorName={senior.preferredName || senior.fullName}
+            language={language}
+            onSimulateShift={onSimulateTriageShift}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
         </div>
       )}
 

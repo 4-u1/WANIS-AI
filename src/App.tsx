@@ -91,7 +91,56 @@ export default function App() {
         { name: 'Dr. Tariq Al-Ghamdi', role: 'Geriatrician', phone: '+966 12 654 3210', channel: 'PUSH', status: 'DELIVERED' },
         { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
       ],
-      keyObservations: ['Postural dizziness noted', 'Sleep duration < 5h'],
+      keyObservations: ['Postural dizziness noted', 'Sleep duration < 5h', 'Hydration intake low'],
+      isRead: true
+    },
+    {
+      id: 'mock-triage-prev-2',
+      timestamp: '3 days ago, 08:30 PM',
+      createdAt: Date.now() - 259200000,
+      previousTriage: 'GREEN',
+      newTriage: 'YELLOW',
+      seniorName: 'فاطمة الهاشمي',
+      reason: 'Late evening fatigue and delay in taking nighttime Amitriptyline dose.',
+      transcriptSnippet: 'كنت متعبة هذا المساء ونسيت موعد حبة النوم لولا تنبيه ونيس.',
+      notifiedMembers: [
+        { name: 'Maryam (Daughter)', role: 'Primary Caregiver', phone: '+966 50 512 3456', channel: 'SMS', status: 'DELIVERED' },
+        { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
+      ],
+      keyObservations: ['Evening fatigue spike', 'Medication reminder confirmed verbally'],
+      isRead: true
+    },
+    {
+      id: 'mock-triage-prev-3',
+      timestamp: '6 days ago, 11:20 AM',
+      createdAt: Date.now() - 518400000,
+      previousTriage: 'GREEN',
+      newTriage: 'YELLOW',
+      seniorName: 'فاطمة الهاشمي',
+      reason: 'Mild joint discomfort and reduced morning mobility reported after household steps.',
+      transcriptSnippet: 'ركبتي تؤلمني قليلاً اليوم بعد المشي في الحديقة صباحاً.',
+      notifiedMembers: [
+        { name: 'Maryam (Daughter)', role: 'Primary Caregiver', phone: '+966 50 512 3456', channel: 'SMS', status: 'DELIVERED' },
+        { name: 'Dr. Tariq Al-Ghamdi', role: 'Geriatrician', phone: '+966 12 654 3210', channel: 'PUSH', status: 'DELIVERED' }
+      ],
+      keyObservations: ['Joint discomfort grade 3/10', 'Rest break recommended'],
+      isRead: true
+    },
+    {
+      id: 'mock-triage-prev-4',
+      timestamp: '12 days ago, 02:40 PM',
+      createdAt: Date.now() - 1036800000,
+      previousTriage: 'YELLOW',
+      newTriage: 'RED',
+      seniorName: 'فاطمة الهاشمي',
+      reason: 'Sudden loss of balance near hallway carpet; safety protocol successfully engaged without injury.',
+      transcriptSnippet: 'تعثرت بحافة السجادة وفقدت توازني لكن تمسكت بالجدار والحمد لله لم أسقط.',
+      notifiedMembers: [
+        { name: 'Maryam (Daughter)', role: 'Primary Caregiver', phone: '+966 50 512 3456', channel: 'AUTOMATED_CALL', status: 'DELIVERED' },
+        { name: 'Dr. Tariq Al-Ghamdi', role: 'Geriatrician', phone: '+966 12 654 3210', channel: 'PUSH', status: 'DELIVERED' },
+        { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'SMS', status: 'DELIVERED' }
+      ],
+      keyObservations: ['Near-fall incident resolved', 'Carpeting secured', 'Emergency protocol verified'],
       isRead: true
     }
   ]);

@@ -314,27 +314,40 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
                   key={med.id}
                   className={`p-4 rounded-2xl border transition-all ${med.acbScore >= 3 ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-300 dark:border-rose-900' : med.acbScore > 0 ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-900' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'}`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">{med.name} ({med.dosage})</h4>
-                        <span className="text-xs text-slate-500">{med.drugClass}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">{med.clinicalExplanation}</p>
-
-                      {med.saferAlternatives && med.saferAlternatives.length > 0 && (
-                        <div className="pt-1 flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] font-bold uppercase text-teal-700 dark:text-teal-400">Safer Alternatives:</span>
-                          {med.saferAlternatives.map((alt, i) => (
-                            <span key={i} className="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 text-[10px] font-semibold border border-teal-200 dark:border-teal-800">
-                              {alt}
-                            </span>
-                          ))}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                    <div className="flex items-start gap-3.5 min-w-0">
+                      {med.imageUrl && (
+                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs">
+                          <img
+                            src={med.imageUrl}
+                            alt={med.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                            loading="lazy"
+                          />
                         </div>
                       )}
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-slate-900 dark:text-white">{med.name} ({med.dosage})</h4>
+                          <span className="text-xs text-slate-500">{med.drugClass}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">{med.clinicalExplanation}</p>
+
+                        {med.saferAlternatives && med.saferAlternatives.length > 0 && (
+                          <div className="pt-1 flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase text-teal-700 dark:text-teal-400">Safer Alternatives:</span>
+                            {med.saferAlternatives.map((alt, i) => (
+                              <span key={i} className="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 text-[10px] font-semibold border border-teal-200 dark:border-teal-800">
+                                {alt}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                       <span className={`px-3 py-1 rounded-xl text-xs font-black ${med.acbScore >= 3 ? 'bg-rose-500 text-white' : med.acbScore > 0 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
                         ACB +{med.acbScore}
                       </span>

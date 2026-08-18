@@ -83,6 +83,58 @@ class NotificationAudio {
       console.warn('Success chime playback failed:', err);
     }
   }
+
+  playTriageAlertChime(triage: 'YELLOW' | 'ORANGE' | 'RED') {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      if (triage === 'RED') {
+        // Urgent alternating alert tones
+        const freqs = [880, 587.33, 880, 587.33];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.18);
+
+          gain.gain.setValueAtTime(0, now + idx * 0.18);
+          gain.gain.linearRampToValueAtTime(0.25, now + idx * 0.18 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.18 + 0.35);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now + idx * 0.18);
+          osc.stop(now + idx * 0.18 + 0.35);
+        });
+      } else {
+        // Yellow/Orange attentive notification chime
+        const freqs = [440, 554.37, 659.25];
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+          gain.gain.setValueAtTime(0, now + idx * 0.12);
+          gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.12 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.5);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now + idx * 0.12);
+          osc.stop(now + idx * 0.12 + 0.5);
+        });
+      }
+    } catch (err) {
+      console.warn('Triage alert audio error:', err);
+    }
+  }
 }
 
 export const notificationAudio = new NotificationAudio();
@@ -197,3 +249,55 @@ export function sendBrowserPushNotification(
     return false;
   }
 }
+
+export function sendCareCircleTriagePushNotification(
+  seniorName: string,
+  newTriage: 'YELLOW' | 'ORANGE' | 'RED',
+  reason: string,
+  language: SupportedLanguage,
+  onClick?: () => void
+): boolean {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return false;
+  }
+
+  if (Notification.permission !== 'granted') {
+    return false;
+  }
+
+  try {
+    const isRed = newTriage === 'RED';
+    const title = language === 'ar'
+      ? (isRed ? `🚨 تنبيه عاجل من دائرة الرعاية: الوالدة ${seniorName}` : `⚠️ إشعار متابعة من دائرة الرعاية: الوالدة ${seniorName}`)
+      : language === 'fr'
+      ? (isRed ? `🚨 Alerte Urgente Cercle de Soins: ${seniorName}` : `⚠️ Notification Cercle de Soins: ${seniorName}`)
+      : (isRed ? `🚨 Care Circle Urgent Alert: ${seniorName}` : `⚠️ Care Circle Alert: ${seniorName}`);
+
+    const body = language === 'ar'
+      ? `تحول مستوى الاطمئنان إلى (${newTriage === 'RED' ? 'طوارئ' : 'متابعة'}). السبب: ${reason}. تم إشعار مريم وفريق الرعاية.`
+      : language === 'fr'
+      ? `Le niveau de triage est passé à (${newTriage}). Motif: ${reason}. Le cercle de soins a été prévenu.`
+      : `Triage level shifted to ${newTriage}. Reason: ${reason}. Care Circle members have been notified.`;
+
+    const notification = new Notification(title, {
+      body,
+      icon: '/icon.png',
+      badge: '/icon.png',
+      tag: `triage-shift-${Date.now()}`,
+      requireInteraction: isRed,
+      data: { triage: newTriage }
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      if (onClick) onClick();
+      notification.close();
+    };
+
+    return true;
+  } catch (err) {
+    console.warn('Browser push notification error:', err);
+    return false;
+  }
+}
+

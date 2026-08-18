@@ -1,9 +1,14 @@
 <div align="center">
 
-# 🧠 WANIS-AI
-
-### منصة الرعاية الصحية المعرفية الذكية لكبار السن
+# 🧠 WANIS-AI (ونيس)
+### منصة الرعاية الصحية المعرفية والذكاء السريري لكبار السن
 ### Senior Cognitive Health & Care Intelligence Platform
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Google Gemini API](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Vite](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
 </div>
 
@@ -11,112 +16,165 @@
 
 ## 📌 نظرة عامة | Overview
 
-**WANIS-AI** هو نظام بيئي متكامل وذكي للرعاية الصحية المعرفية لكبار السن، مصمم بمسؤولية سريرية وذكاء ثقافي. يجمع بين أحدث تقنيات الذكاء الاصطناعي التوليدي وأفضل ممارسات الرعاية الصحية لتقديم تجربة رعاية شاملة ومستمرة.
+**WANIS-AI (ونيس)** هو نظام بيئي متكامل وذكي للرعاية الصحية المعرفية لكبار السن، مصمم بمسؤولية سريرية وذكاء ثقافي عميق يلائم البيئة العربية والخليجية. يجمع النظام بين الذكاء الاصطناعي التوليدي والتحليل الصوتي الحواري ونظم الرعاية المستمرة لتقديم تجربة وقائية وتفاعلية تحفظ استقلالية كبار السن وتمنح عائلاتهم الطمأنينة الكاملة.
 
-**WANIS-AI** is a clinically responsible, culturally intelligent senior cognitive wellbeing ecosystem featuring continuous care orchestration, advanced medication intelligence, and a dedicated Hajj/Umrah companion.
-
----
-
-## ✨ المميزات الرئيسية | Key Features
-
-### 🔄 Continuous Care Orchestration
-رعاية مستمرة ومتكاملة تتابع الحالة الصحية المعرفية لكبار السن على مدار الساعة مع تنسيق ذكي بين مختلف جوانب الرعاية.
-
-### 💊 Anticholinergic Cognitive Burden (ACB) Intelligence
-نظام ذكي لتحليل العبء المعرفي الناتج عن الأدوية المضادة للكولين، يساعد الأطباء والمرضى على اتخاذ قرارات دوائية أكثر أماناً لصحة الدماغ.
-
-### 📋 Doctor Brief 2.0
-ملخص طبي ذكي ومحدّث يُقدّم للطبيب صورة شاملة عن حالة المريض قبل كل زيارة، موفراً الوقت ومحسّناً جودة الرعاية.
-
-### 🕋 Rufqa — Hajj & Umrah Companion
-رفيق ذكي مخصص لكبار السن أثناء أداء الحج والعمرة، يوفر إرشاداً صحياً وتتبع الموقع والدعم الطارئ مع مراعاة الخصوصية الثقافية.
-
-### 🎙️ Voice Interaction
-واجهة صوتية تفاعلية تتيح لكبار السن التواصل بشكل طبيعي دون الحاجة لمهارات تقنية.
+**WANIS-AI** is a comprehensive, clinically responsible, and culturally attuned senior cognitive health ecosystem. By combining multimodal voice intake, deterministic clinical risk assessment, automated Care Circle notification protocols, and longitudinal geriatric tracking, Wanis bridges the gap between seniors, families, and healthcare providers.
 
 ---
 
-## 🛠️ التقنيات المستخدمة | Tech Stack
+## ✨ المميزات الرئيسية | Core Capabilities
 
-| الطبقة | التقنية |
-| :--- | :--- |
-| **Frontend** | React 19, TypeScript, Tailwind CSS 4 |
-| **Backend** | Node.js, Express.js |
-| **AI Engine** | Google Gemini AI (`@google/genai`) |
-| **Build Tool** | Vite 6 |
-| **Animations** | Motion (Framer Motion) |
-| **Icons** | Lucide React |
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             WANIS-AI ECOSYSTEM                              │
+├───────────────────┬───────────────────┬───────────────────┬─────────────────┤
+│  👵 SENIOR MODE   │  👨‍👩‍👧 FAMILY PORTAL  │  🩺 CLINICIAN 2.0 │  🕋 RUFQA HAJJ  │
+│  Simple Voice UI  │  Wellness Summary │  Doctor Brief 2.0 │  Lost Mode      │
+│  Med Adherence    │  Care Circle SMS  │  ACB Risk Engine  │  Emergency Card │
+│  Warm Dialogues   │  Live Activity    │  Trend Analytics  │  Tawafa Hotline │
+└───────────────────┴───────────────────┴───────────────────┴─────────────────┘
+```
+
+### 1. 🎙️ فحص الاطمئنان الصوتي اليومي | Daily Voice Check-in
+* **حوار طبيعي ودود**: التحدث مع الوالدين باللهجة الحجازية والعربية الفصحى مع واجهة مبسطة للغاية خالية من التعقيد.
+* **التحليل المعرفي الصوتي**: استخلاص مؤشرات جودة النوم، مستوى الإرهاق، الحالة المزاجية، والتواصل الاجتماعي تلقائياً.
+* **محرك تصنيف أمان سريري (Triage)**:
+  * 🟢 **GREEN**: استقرار تام وتوافق مع خط الأساس الطبيعي.
+  * 🟡 **YELLOW**: تغير ملحوظ (قلة نوم، إرهاق) يستوجب متابعة العائلة.
+  * 🟠 **ORANGE**: مؤشرات تستدعي مراجعة الطبيب المعالج.
+  * 🔴 **RED**: طوارئ حرجة (سقوط، ألم حاد) تستدعي تدخلاً فورياً.
+
+### 2. 🚨 تنبيهات دائرة الرعاية التلقائية | Automated Care Circle Alerts
+* **رصد التحولات السريرية**: إشعار فوري عند تحول حالة الوالد/الوالدة من **`GREEN`** إلى **`YELLOW`** أو **`RED`**.
+* **تنبيهات صوتية ودفع فوري**: نغمات صوتية مركبة عبر Web Audio API مع إشعارات متصفح Push API ورسائل SMS تلقائية.
+* **مؤشر زمني مباشر**: بطاقة إشعار تفاعلية مزودة بعداد زمني يُظهر لحظة انطلاق التنبيه وعدد الثواني المنقضية ومسار الرعاية النشط.
+* **سجل تدقيق الإشعارات**: لوحة مخصصة في بوابة العائلة لتوثيق جميع الإرساليات لأفراد العائلة والأطباء.
+
+### 3. 📊 ملخص العافية والاطمئنان اليومي | Daily Wellness Summary
+* **نافذة ترحيبية ذكية**: تظهر لأفراد العائلة فور تسجيل الدخول لتقديم موجز شامل عن صحة الوالد/الوالدة اليوم.
+* **تجميع البيانات الحيوية**: دمج نتائج الفحص الصوتي، نسبة الالتزام بالأدوية، وتحديثات العبء المعرفي في تقرير واحد سريع القراءة.
+
+### 4. 💊 ذكاء العبء المعرفي للأدوية | Anticholinergic Cognitive Burden (ACB)
+* **حماية الذاكرة**: حساب تراكمي لمؤشر ACB للأدوية المتناولة لتفادي التدهور المعرفي أو التشوش الذهني الناتج عن التفاعلات الدوائية.
+* **مركز التذكير بالأدوية**: تذكيرات صوتية وبصرية مع صور واضحة للأقراص والجرعات، وتأكيد التناول بنقرة واحدة.
+
+### 5. 🩺 موجز الطبيب المتقدم 2.0 | Clinician & Doctor Brief 2.0
+* **تقرير سريري جاهز للطبيب**: يلخص التاريخ الصحي المعرفي على مدار 30 و90 يوماً قبل موعد المريض.
+* **تصدير وطباعة موثقة**: إمكانية تصدير التقرير بتنسيق PDF أو طباعته مع ختم التوثيق السريري والتشفير الرياضي للبيانات.
+
+### 6. 🕋 رفقة — أمان الحاج والمعتمر | Rufqa Hajj & Umrah Companion
+* **وضع التائه (Lost Mode)**: بث مباشر لإحداثيات الحاج إلى أسرته ومرشد الحملة (المطوف).
+* **بطاقة الطوارئ الرقمية متعددة اللغات**: بطاقة ذكية تدعم 6 لغات (العربية، الإنجليزية، الفرنسية، الأردية، الإندونيسية، التركية) قابلة للترجمة الفورية دون اتصال.
+* **نقاط التجمع في الحرم**: تحديد موقع الفندق وبوابات الحرم بنقرة واحدة.
+
+### 7. 🔄 محرك دورة الرعاية الثمانية | Agentic 8-Stage Care Loop
+* دورة رعاية مستمرة وشفافة تشمل: **الملاحظة ➔ الفهم ➔ التقييم ➔ التوصية ➔ التنفيذ ➔ المشاركة ➔ المتابعة ➔ التعلم**.
+* سجل تدقيق كامل (Audit Log) مع تحديد صلاحيات الخصوصية ومستويات الموافقة (Tier 1, Tier 2, Tier 3).
 
 ---
 
-## 🚀 تشغيل المشروع | Getting Started
+## 🛠️ البنية التقنية | Architecture & Tech Stack
 
-### المتطلبات | Prerequisites
-* **Node.js** >= 18
-* **مفتاح Gemini API** — احصل عليه من [Google AI Studio](https://aistudio.google.com/)
+| الطبقة | التقنية المستخدمة | الوظيفة |
+| :--- | :--- | :--- |
+| **Frontend Framework** | **React 19 + TypeScript** | واجهة مستخدم سريعة ومتوافقة مع أعلى معايير الأمان |
+| **Styling & Design** | **Tailwind CSS 4** | تصميم متجاوب فائق الأناقة مع دعم كامل للوضع الداكن و RTL |
+| **AI Orchestration** | **Google Gemini (`@google/genai`)** | التحليل الصوتي واستخلاص المؤشرات السريرية ونماذج الرعاية |
+| **Backend & API** | **Node.js + Express.js** | خادم متكامل آمن للتعامل مع المفاتيح وواجهات البرمجة |
+| **Audio Processing** | **Web Audio API + Speech Synthesis** | توليد نغمات التنبيه التوافقية والتوجيه الصوتي بالعربية والإنجليزية |
+| **Build & Bundler** | **Vite 6 + ESBuild** | حزم التطبيق بأعلى أداء وزمن تشغيل فائق السرعة |
+| **Icons & Visuals** | **Lucide React + Motion** | أيقونات موحدة وحركات تفاعلية سلسة |
 
-### التثبيت | Installation
+---
+
+## 📁 هيكل المجلدات | Project Directory Structure
+
+```text
+WANIS-AI/
+├── src/
+│   ├── components/
+│   │   ├── SeniorMode/              # واجهات رفيق كبار السن والفحص الصوتي
+│   │   ├── FamilyMode/              # بوابة العائلة وملخص العافية وتنبيهات دائرة الرعاية
+│   │   ├── ClinicianMode/           # لوحة الطبيب وتقرير Doctor Brief 2.0
+│   │   ├── RufqaMode/               # رفيق الحج والعمرة ووضع التائه
+│   │   ├── OrchestratorMode/        # محرك دورة الرعاية الثمانية وسجل التدقيق
+│   │   ├── InvestorMode/            # الجناح التنفيذي ومؤشرات الأداء الاستراتيجية
+│   │   ├── Notifications/           # إشعارات الأدوية وتنبيهات CareCircleTriageToast
+│   │   ├── EmergencyCard/           # بطاقة الطوارئ الرقمية متعددة اللغات
+│   │   ├── Walkthrough/             # الجولة الإرشادية ومركز الشروحات
+│   │   └── Navbar.tsx               # شريط التنقل العلوي وتبديل اللغات والشخصيات
+│   ├── services/
+│   │   ├── api.ts                   # واجهات الاتصال بالذكاء الاصطناعي وخادم Express
+│   │   ├── notificationService.ts   # محرك النغمات الصوتية وإشعارات Push Web API
+│   │   └── wellnessSummaryService.ts # خدمة تجميع تقارير العافية اليومية
+│   ├── data/
+│   │   ├── mockData.ts              # البيانات السريرية وسجلات الفحص الأولية
+│   │   ├── i18n.ts                  # القاموس اللغوي الثلاثي (العربية، الإنجليزية، الفرنسية)
+│   │   ├── emergencyCardData.ts     # بيانات بطاقات الطوارئ وترجماتها
+│   │   └── walkthroughData.ts       # محتوى الشروحات التفاعلية
+│   ├── types.ts                     # تعريفات TypeScript ونماذج البيانات الشاملة
+│   ├── index.css                    # تنسيقات Tailwind CSS وخطوط الواجهة
+│   ├── App.tsx                      # المكون الرئيسي وتنسيق حالات النظام
+│   └── main.tsx                     # نقطة دخول تطبيق React
+├── server.ts                        # خادم Express ومسارات معالجة Gemini API
+├── metadata.json                    # بيانات المشروع والصلاحيات المطلوبة
+├── package.json                     # الحزم والمكتبات المعتمدة
+└── README.md                        # التوثيق الشامل للنظام
+```
+
+---
+
+## 🚀 البدء والتشغيل | Getting Started
+
+### المتطلبات الأساسية | Prerequisites
+* **Node.js** الإصدار 18 فما فوق.
+* **مفتاح Google Gemini API** (احصل عليه من [Google AI Studio](https://aistudio.google.com/)).
+
+### خطوات التثبيت والتشغيل | Installation Steps
 
 ```bash
-# 1. استنساخ المشروع
+# 1. استنساخ المستودع
 git clone https://github.com/4-u1/WANIS-AI.git
 cd WANIS-AI
 
-# 2. تثبيت المكتبات
+# 2. تثبيت الحزم والمكتبات
 npm install
 
 # 3. إعداد متغيرات البيئة
 cp .env.example .env
-# افتح .env وأضف مفتاح Gemini API الخاص بك
-```
+# افتح ملف .env وأضف المفتاح الخاص بك:
+# GEMINI_API_KEY=your_actual_gemini_api_key_here
 
-### متغيرات البيئة | Environment Variables
-
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-### التشغيل | Run
-
-```bash
-# وضع التطوير
+# 4. تشغيل خادم التطوير
 npm run dev
 
-# بناء الإنتاج
+# 5. بناء نسخة الإنتاج
 npm run build
 npm start
 ```
 
----
-
-## 📁 هيكل المشروع | Project Structure
-
-```text
-WANIS-AI/
-├── src/                  # الكود الرئيسي للواجهة
-├── assets/
-│   └── .aistudio/        # إعدادات Google AI Studio
-├── server.ts             # خادم Express.js
-├── index.html            # نقطة دخول HTML
-├── metadata.json         # بيانات المشروع
-├── vite.config.ts        # إعدادات Vite
-├── tsconfig.json         # إعدادات TypeScript
-├── .env.example          # نموذج متغيرات البيئة
-└── package.json
-```
+سيكون التطبيق متاحاً على الرابط: `http://localhost:3000`
 
 ---
 
-## 🔒 الصلاحيات المطلوبة | Permissions Required
+## 🔒 الخصوصية ومصفوفة الموافقات | Privacy & Consent Matrix
 
-| الصلاحية | الغرض |
-| :--- | :--- |
-| 🎙️ **Microphone** | التفاعل الصوتي مع كبار السن |
-| 📍 **Geolocation** | تتبع الموقع لرفيق الحج والعمرة |
+يلتزم نظام **WANIS-AI** بأعلى معايير حماية البيانات والخصوصية الصحية من خلال ثلاث طبقات موافقة محكمة:
+1. **Tier 1 (Private Senior Data)**: التسجيلات الصوتية والمحادثات الشخصية تظل مشفرة ولا تخرج عن جهاز المستخدم إلا بإذن صريح.
+2. **Tier 2 (Family Support Digest)**: مشاركة الملخصات المعرفية العامة ونسب تناول الأدوية وتنبيهات تغير الحالة مع العائلة دون المساس بخصوصية الحوار.
+3. **Tier 3 (Clinical Escalation)**: إتاحة تقارير مفصلة للطبيب المعالج وفريق الطوارئ عند حدوث أي تصعيد سريري أو تفعيل وضع التائه.
 
 ---
 
-## 🏛️ الجهة الداعمة | Acknowledgment
+## ⚠️ إخلاء المسؤولية السريرية | Clinical Disclaimer
+
+**WANIS-AI** هو نظام ذكاء اصطناعي لدعم اتخاذ القرار والمتابعة الوقائية، ولا يُعد بديلاً عن الفحص الطبي المتخصص أو التشخيص السريري المباشر. يُرجى دائماً استشارة الطبيب المعالج أو الاتصال بالطوارئ الطبية عند حدوث أي طارئ صحي حاد.
+
+*WANIS-AI is an assistive clinical decision-support ecosystem and does not replace licensed medical professionals or emergency response teams. Always consult a qualified geriatrician or physician for medical advice.*
+
+---
+
+## 🏛️ الجهة الراعية والتقدير | Acknowledgment
 
 <div align="center">
 
@@ -125,30 +183,17 @@ WANIS-AI/
 بإشراف  
 **الهيئة السعودية للبيانات والذكاء الاصطناعي (SDAIA)**  
 **أكاديمية سدايا — [@SDAIAAcademy](https://github.com/SDAIAAcademy)**  
+*صيف المستقبل 2026*
 
-*This project was developed as part of the Prompt Engineering & Responsible AI Use workshop by Saudi Data and AI Authority (SDAIA) Academy ([@SDAIAAcademy](https://github.com/SDAIAAcademy)) — Summer of the Future 2026*
+*Developed under the supervision of the Saudi Data and AI Authority (SDAIA) Academy — Summer of the Future 2026.*
 
 </div>
 
 ---
 
-## ⚠️ إخلاء المسؤولية الطبية | Medical Disclaimer
-
-**WANIS-AI** هو أداة دعم قرار مساعدة ولا يُغني عن الاستشارة الطبية المتخصصة. جميع المعلومات المُقدّمة للأغراض التعليمية والتوجيهية فقط. يجب دائماً استشارة طبيب مختص قبل اتخاذ أي قرار طبي.
-
-*WANIS-AI is a decision-support tool and does not replace professional medical advice. Always consult a qualified healthcare provider.*
-
----
-
-## 📄 الرخصة | License
-
-هذا المشروع مرخص تحت رخصة **MIT** — راجع ملف [LICENSE](LICENSE) للتفاصيل.
-
-<br/>
-
 <div align="center">
 
-صُنع بـ 🤍 في المملكة العربية السعودية  
-**Made with 🤍 in Saudi Arabia 🇸🇦**
+صُنع بـ 🤍 لخدمة كبار السن وضيوف الرحمن 🇸🇦  
+**Engineered with precision for senior dignity and peace of mind.**
 
 </div>

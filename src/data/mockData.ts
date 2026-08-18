@@ -61,7 +61,8 @@ export const INITIAL_MEDICATIONS: Medication[] = [
     clinicalExplanation: 'Potent central and peripheral anticholinergic agent (Score 3). May induce morning confusion, delayed processing speed, dry mouth, and postural dizziness in older adults.',
     saferAlternatives: ['Melatonin receptor agonists', 'SSRI/SNRI with ACB=0 (e.g. Escitalopram)', 'Gabapentin (low dose with renal monitoring)'],
     lastTaken: 'Yesterday 10:15 PM',
-    isTakenToday: true
+    isTakenToday: true,
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: 'med-02',
@@ -75,7 +76,8 @@ export const INITIAL_MEDICATIONS: Medication[] = [
     clinicalExplanation: 'Mild anticholinergic activity (Score 1). Crosses blood-brain barrier readily, compounding sedation and additive anticholinergic cognitive burden when combined with Amitriptyline.',
     saferAlternatives: ['Cetirizine (2nd gen, ACB 0)', 'Fexofenadine (ACB 0)', 'Fluticasone nasal spray'],
     lastTaken: 'Yesterday 02:00 PM',
-    isTakenToday: false
+    isTakenToday: false,
+    imageUrl: 'https://images.unsplash.com/photo-1550572017-edd951aa8f72?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: 'med-03',
@@ -89,7 +91,8 @@ export const INITIAL_MEDICATIONS: Medication[] = [
     clinicalExplanation: 'Zero anticholinergic burden (Score 0). Safe for cognitive baseline, maintains metabolic stability.',
     saferAlternatives: [],
     lastTaken: 'Today 08:45 AM',
-    isTakenToday: true
+    isTakenToday: true,
+    imageUrl: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: 'med-04',
@@ -103,7 +106,8 @@ export const INITIAL_MEDICATIONS: Medication[] = [
     clinicalExplanation: 'Zero anticholinergic burden (Score 0). Established neurovascular protective profile.',
     saferAlternatives: [],
     lastTaken: 'Yesterday 09:00 PM',
-    isTakenToday: true
+    isTakenToday: true,
+    imageUrl: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&q=80&w=400'
   },
   {
     id: 'med-05',
@@ -117,7 +121,8 @@ export const INITIAL_MEDICATIONS: Medication[] = [
     clinicalExplanation: 'Zero anticholinergic burden (Score 0). Supports steady blood pressure control.',
     saferAlternatives: [],
     lastTaken: 'Today 08:45 AM',
-    isTakenToday: true
+    isTakenToday: true,
+    imageUrl: 'https://images.unsplash.com/photo-1576073719676-aa955fc6b889?auto=format&fit=crop&q=80&w=400'
   }
 ];
 

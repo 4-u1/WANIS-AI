@@ -29,10 +29,15 @@ import {
   LongitudinalMetrics, 
   CareLoopEvent, 
   SupportedLanguage, 
-  PersonaMode 
+  PersonaMode,
+  Medication,
+  CareCircleTriageNotification
 } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { CaregiverDigestCard } from './CaregiverDigestCard';
+import { DailyWellnessSummaryModal } from './DailyWellnessSummaryModal';
+import { DailyWellnessSummaryCard } from './DailyWellnessSummaryCard';
+import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
 
 interface FamilyViewProps {
   senior: SeniorProfile;
@@ -40,10 +45,15 @@ interface FamilyViewProps {
   careCircle: CareCircleMember[];
   longitudinalData: LongitudinalMetrics[];
   careLoopEvents: CareLoopEvent[];
+  medications?: Medication[];
+  triageNotifications?: CareCircleTriageNotification[];
   onOpenDoctorBrief: () => void;
   onNavigateToMode: (mode: PersonaMode) => void;
   language: SupportedLanguage;
   totalAcbScore: number;
+  onToggleMedicationTaken?: (id: string) => void;
+  onTriggerMedicationReminder?: (med: Medication) => void;
+  onSimulateTriageShift?: (targetTriage: 'YELLOW' | 'RED') => void;
 }
 
 export const FamilyView: React.FC<FamilyViewProps> = ({
@@ -52,14 +62,55 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
   careCircle,
   longitudinalData,
   careLoopEvents,
+  medications = [],
+  triageNotifications = [],
   onOpenDoctorBrief,
   onNavigateToMode,
   language,
-  totalAcbScore
+  totalAcbScore,
+  onToggleMedicationTaken,
+  onTriggerMedicationReminder,
+  onSimulateTriageShift
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
   const latestCheckin = checkins[0];
+
+  // Daily Wellness Summary Modal state (auto-shows on initial login to Family mode)
+  const [isDailySummaryOpen, setIsDailySummaryOpen] = useState<boolean>(() => {
+    try {
+      const dismissedSession = sessionStorage.getItem('wanis_daily_summary_dismissed_session');
+      return dismissedSession !== 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const [autoShowPreference, setAutoShowPreference] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('wanis_auto_show_daily_summary') !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  const handleUpdateAutoShowPreference = (enabled: boolean) => {
+    setAutoShowPreference(enabled);
+    try {
+      localStorage.setItem('wanis_auto_show_daily_summary', enabled ? 'true' : 'false');
+    } catch (e) {
+      console.warn('Storage error', e);
+    }
+  };
+
+  const handleCloseDailySummary = () => {
+    setIsDailySummaryOpen(false);
+    try {
+      sessionStorage.setItem('wanis_daily_summary_dismissed_session', 'true');
+    } catch (e) {
+      console.warn('Storage error', e);
+    }
+  };
 
   const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'trends' | 'circle'>('timeline');
   const [quickNote, setQuickNote] = useState('');
@@ -176,12 +227,22 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
           </div>
         </div>
 
-        {/* Doctor Brief CTA */}
-        <div className="flex items-center gap-3">
+        {/* Action CTAs: Daily Wellness Summary & Doctor Brief */}
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+          <button
+            id="family-open-daily-summary-btn"
+            onClick={() => setIsDailySummaryOpen(true)}
+            className="px-4 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-sm shadow-md shadow-amber-400/20 flex items-center gap-2 transition-transform active:scale-95"
+            title="Open Daily Wellness Summary"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>{language === 'ar' ? 'ملخص العافية اليومي' : 'Daily Wellness Summary'}</span>
+          </button>
+
           <button
             id="family-open-doctor-brief-btn"
             onClick={onOpenDoctorBrief}
-            className="px-5 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md shadow-teal-600/20 flex items-center gap-2 transition-transform active:scale-95"
+            className="px-4 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md shadow-teal-600/20 flex items-center gap-2 transition-transform active:scale-95"
           >
             <FileText className="w-4 h-4" />
             <span>{t.doctorBrief}</span>
@@ -189,7 +250,19 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </div>
       </div>
 
-      {/* TOP HERO: Dedicated High-Contrast Caregiver Digest Card */}
+      {/* 1. Daily Wellness Summary (Check-in Notes + Medication Adherence Aggregation) */}
+      <DailyWellnessSummaryCard
+        senior={senior}
+        latestCheckin={latestCheckin}
+        medications={medications}
+        totalAcbScore={totalAcbScore}
+        language={language}
+        onOpenFullModal={() => setIsDailySummaryOpen(true)}
+        onToggleMedicationTaken={onToggleMedicationTaken}
+        onTriggerMedicationReminder={onTriggerMedicationReminder}
+      />
+
+      {/* 2. Caregiver Digest Card */}
       <CaregiverDigestCard
         careLoopEvents={careLoopEvents}
         senior={senior}
@@ -623,32 +696,58 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
 
       {/* TAB 3: CARE CIRCLE */}
       {activeSubTab === 'circle' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {careCircle.map((member) => (
-            <div key={member.id} className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-              <div className="flex items-center gap-3">
-                <img src={member.avatar} alt={member.name} className="w-14 h-14 rounded-2xl object-cover" />
-                <div>
-                  <h4 className="font-bold text-base text-slate-900 dark:text-white">{member.name}</h4>
-                  <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold">{member.role}</span>
+        <div className="space-y-6">
+          {/* Automated Protocol & Notification History Panel */}
+          <CareCircleAlertsPanel
+            notifications={triageNotifications}
+            seniorName={senior.preferredName || senior.fullName}
+            currentTriage={senior.currentTriage || 'GREEN'}
+            language={language}
+            onSimulateShift={onSimulateTriageShift}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {careCircle.map((member) => (
+              <div key={member.id} className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="flex items-center gap-3">
+                  <img src={member.avatar} alt={member.name} className="w-14 h-14 rounded-2xl object-cover" />
+                  <div>
+                    <h4 className="font-bold text-base text-slate-900 dark:text-white">{member.name}</h4>
+                    <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold">{member.role}</span>
+                  </div>
                 </div>
+                <div className="text-xs text-slate-500 space-y-1">
+                  <p>Phone: {member.phone}</p>
+                  <p>Consent Tier: {member.consentTierGranted}</p>
+                  <p>Status: Active</p>
+                </div>
+                <a 
+                  href={`tel:${member.phone}`}
+                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center gap-2"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call {member.relation}</span>
+                </a>
               </div>
-              <div className="text-xs text-slate-500 space-y-1">
-                <p>Phone: {member.phone}</p>
-                <p>Consent Tier: {member.consentTierGranted}</p>
-                <p>Status: Active</p>
-              </div>
-              <a 
-                href={`tel:${member.phone}`}
-                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center gap-2"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Call {member.relation}</span>
-              </a>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
+
+      {/* Daily Wellness Summary Modal (Greeting family upon login & on-demand review) */}
+      <DailyWellnessSummaryModal
+        isOpen={isDailySummaryOpen}
+        onClose={handleCloseDailySummary}
+        senior={senior}
+        latestCheckin={latestCheckin}
+        medications={medications}
+        totalAcbScore={totalAcbScore}
+        language={language}
+        onToggleMedicationTaken={onToggleMedicationTaken}
+        onTriggerMedicationReminder={onTriggerMedicationReminder}
+        autoShowPreference={autoShowPreference}
+        onUpdateAutoShowPreference={handleUpdateAutoShowPreference}
+      />
 
     </div>
   );

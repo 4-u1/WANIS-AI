@@ -142,25 +142,85 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
             <div
               key={med.id}
               id={`med-card-${med.id}`}
-              className={`p-5 rounded-3xl border transition-all ${med.isTakenToday ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm'}`}
+              className={`p-5 rounded-3xl border transition-all ${
+                med.isTakenToday 
+                  ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60' 
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm'
+              }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                      {med.name}
-                    </h4>
-                    <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                      {med.dosage}
-                    </span>
+              <div className="flex items-start gap-4">
+                {/* Medication Pill Photo Thumbnail */}
+                {med.imageUrl ? (
+                  <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm">
+                    <img
+                      src={med.imageUrl}
+                      alt={med.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-teal-50 dark:bg-teal-950/70 border-2 border-teal-200 dark:border-teal-800 flex items-center justify-center shrink-0 text-teal-600 dark:text-teal-400">
+                    <Pill className="w-8 h-8" />
+                  </div>
+                )}
+
+                {/* Info and Actions Container */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-base font-extrabold text-slate-900 dark:text-white">
+                          {med.name}
+                        </h4>
+                        <span className="px-2 py-0.5 text-xs font-semibold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                          {med.dosage}
+                        </span>
+                      </div>
+
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        {med.indication} • {med.frequency}
+                      </p>
+                    </div>
+
+                    {/* Card Action Buttons */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {!med.isTakenToday && onTriggerReminderToast && (
+                        <button
+                          type="button"
+                          id={`card-remind-btn-${med.id}`}
+                          onClick={() => handleQuickTriggerReminder(med)}
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/80 dark:hover:bg-teal-900 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 transition-colors"
+                          title={language === 'ar' ? 'إرسال تنبيه منبثق فوري' : 'Trigger instant reminder toast'}
+                        >
+                          <Bell className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Take/Untake Action Button */}
+                      <button
+                        id={`toggle-med-${med.id}`}
+                        onClick={() => {
+                          if (!med.isTakenToday) {
+                            notificationAudio.playSuccessChime();
+                          }
+                          onToggleTaken(med.id);
+                        }}
+                        className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold transition-transform active:scale-90 ${
+                          med.isTakenToday 
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' 
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'
+                        }`}
+                        title={med.isTakenToday ? 'Mark as not taken' : 'Mark as taken'}
+                      >
+                        <Check className={`w-5 h-5 ${med.isTakenToday ? 'stroke-[3]' : 'opacity-40'}`} />
+                      </button>
+                    </div>
                   </div>
 
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    {med.indication} • {med.frequency}
-                  </p>
-
                   {hasAcb && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-900/60">
+                    <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-200/80 dark:border-amber-900/60 w-fit">
                       <Info className="w-3.5 h-3.5 shrink-0" />
                       <span>
                         {language === 'ar' 
@@ -169,36 +229,6 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
                       </span>
                     </div>
                   )}
-                </div>
-
-                {/* Card Action Buttons */}
-                <div className="flex items-center gap-2">
-                  {!med.isTakenToday && onTriggerReminderToast && (
-                    <button
-                      type="button"
-                      id={`card-remind-btn-${med.id}`}
-                      onClick={() => handleQuickTriggerReminder(med)}
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/80 dark:hover:bg-teal-900 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 transition-colors"
-                      title={language === 'ar' ? 'إرسال تنبيه منبثق فوري' : 'Trigger instant reminder toast'}
-                    >
-                      <Bell className="w-5 h-5" />
-                    </button>
-                  )}
-
-                  {/* Take/Untake Action Button */}
-                  <button
-                    id={`toggle-med-${med.id}`}
-                    onClick={() => {
-                      if (!med.isTakenToday) {
-                        notificationAudio.playSuccessChime();
-                      }
-                      onToggleTaken(med.id);
-                    }}
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold transition-transform active:scale-90 ${med.isTakenToday ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700'}`}
-                    title={med.isTakenToday ? 'Mark as not taken' : 'Mark as taken'}
-                  >
-                    <Check className={`w-6 h-6 ${med.isTakenToday ? 'stroke-[3]' : 'opacity-40'}`} />
-                  </button>
                 </div>
               </div>
 

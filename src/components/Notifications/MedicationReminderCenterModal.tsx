@@ -281,32 +281,52 @@ export const MedicationReminderCenterModal: React.FC<MedicationReminderCenterMod
                 return (
                   <div
                     key={med.id}
-                    className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    id={`modal-med-row-${med.id}`}
+                    className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 ${
                       med.isTakenToday
                         ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60'
                         : 'bg-white dark:bg-slate-850 border-slate-200 dark:border-slate-800 shadow-xs'
                     }`}
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                          {med.name}
-                        </span>
-                        <span className="px-2 py-0.5 text-xs font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                          {med.dosage}
-                        </span>
-                        {hasAcb && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                            ACB +{med.acbScore}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {/* Medication Photo Thumbnail */}
+                      {med.imageUrl ? (
+                        <div className="relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-xs">
+                          <img
+                            src={med.imageUrl}
+                            alt={med.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 flex items-center justify-center shrink-0 text-teal-600 dark:text-teal-400">
+                          <Pill className="w-6 h-6" />
+                        </div>
+                      )}
+
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">
+                            {med.name}
                           </span>
-                        )}
+                          <span className="px-2 py-0.5 text-xs font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            {med.dosage}
+                          </span>
+                          {hasAcb && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              ACB +{med.acbScore}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate sm:whitespace-normal">
+                          {med.indication} • {med.frequency}
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {med.indication} • {med.frequency}
-                      </p>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end sm:self-center">
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                       {/* Test Reminder Button */}
                       <button
                         type="button"

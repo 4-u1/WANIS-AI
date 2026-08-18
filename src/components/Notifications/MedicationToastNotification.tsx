@@ -73,16 +73,28 @@ export const MedicationToastNotification: React.FC<MedicationToastNotificationPr
           >
             {/* Header / Pill Badge & Close */}
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
-                    hasHighAcb
-                      ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300'
-                      : 'bg-teal-100 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300'
-                  }`}
-                >
-                  <Pill className="w-6 h-6 animate-pulse" />
-                </div>
+              <div className="flex items-center gap-3">
+                {medication.imageUrl ? (
+                  <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shadow-sm">
+                    <img
+                      src={medication.imageUrl}
+                      alt={medication.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                      hasHighAcb
+                        ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300'
+                        : 'bg-teal-100 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300'
+                    }`}
+                  >
+                    <Pill className="w-6 h-6 animate-pulse" />
+                  </div>
+                )}
                 <div>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400 flex items-center gap-1">

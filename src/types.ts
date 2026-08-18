@@ -29,6 +29,7 @@ export interface Medication {
   saferAlternatives: string[];
   lastTaken?: string;
   isTakenToday: boolean;
+  imageUrl?: string;
 }
 
 export interface LongitudinalMetrics {
@@ -100,6 +101,27 @@ export interface CareCircleMember {
   consentTierGranted: ConsentTier;
   notificationsEnabled: boolean;
   lastActive: string;
+}
+
+export interface CareCircleTriageNotification {
+  id: string;
+  timestamp: string;
+  createdAt?: number;
+  previousTriage: TriageLevel;
+  newTriage: TriageLevel;
+  seniorName: string;
+  reason: string;
+  notifiedMembers: {
+    name: string;
+    role: string;
+    phone: string;
+    channel: 'SMS' | 'PUSH' | 'AUTOMATED_CALL';
+    status: 'DELIVERED' | 'SENT';
+  }[];
+  keyObservations: string[];
+  checkinId?: string;
+  transcriptSnippet?: string;
+  isRead: boolean;
 }
 
 export interface DoctorBriefData {

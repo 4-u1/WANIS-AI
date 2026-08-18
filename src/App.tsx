@@ -11,7 +11,8 @@ import {
   DoctorBriefData, 
   TriageLevel,
   ContextualHelpItem,
-  EmergencyCardData
+  EmergencyCardData,
+  CareCircleTriageNotification
 } from './types';
 import { 
   MOCK_SENIOR_PROFILE, 
@@ -45,10 +46,12 @@ import { FirstTimeWelcomeModal } from './components/Walkthrough/FirstTimeWelcome
 import { WaneesProductIntroductionModal } from './components/Walkthrough/WaneesProductIntroductionModal';
 import { MedicationToastNotification, ActiveMedicationReminder } from './components/Notifications/MedicationToastNotification';
 import { MedicationReminderCenterModal } from './components/Notifications/MedicationReminderCenterModal';
+import { CareCircleTriageToast } from './components/Notifications/CareCircleTriageToast';
 import { 
   notificationAudio, 
   speakMedicationReminder, 
-  sendBrowserPushNotification 
+  sendBrowserPushNotification,
+  sendCareCircleTriagePushNotification
 } from './services/notificationService';
 
 export default function App() {
@@ -70,6 +73,28 @@ export default function App() {
   // In-App Medication Reminders & Toast Queue State
   const [activeReminders, setActiveReminders] = useState<ActiveMedicationReminder[]>([]);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState<boolean>(false);
+
+  // Automated Care Circle Triage Shift Notifications
+  const [activeTriageNotification, setActiveTriageNotification] = useState<CareCircleTriageNotification | null>(null);
+  const [triageNotificationHistory, setTriageNotificationHistory] = useState<CareCircleTriageNotification[]>([
+    {
+      id: 'mock-triage-prev-1',
+      timestamp: 'Yesterday, 04:15 PM',
+      createdAt: Date.now() - 86400000,
+      previousTriage: 'GREEN',
+      newTriage: 'YELLOW',
+      seniorName: 'فاطمة الهاشمي',
+      reason: 'Fragmented sleep (4.5h) and mild postural dizziness reported during afternoon check-in.',
+      transcriptSnippet: 'نمت متقطعاً البارحة وأشعر بثقل خفيف في رأسي ودوخة بسيطة عند الوقوف.',
+      notifiedMembers: [
+        { name: 'Maryam (Daughter)', role: 'Primary Caregiver', phone: '+966 50 512 3456', channel: 'SMS', status: 'DELIVERED' },
+        { name: 'Dr. Tariq Al-Ghamdi', role: 'Geriatrician', phone: '+966 12 654 3210', channel: 'PUSH', status: 'DELIVERED' },
+        { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
+      ],
+      keyObservations: ['Postural dizziness noted', 'Sleep duration < 5h'],
+      isRead: true
+    }
+  ]);
 
   // Modals
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
@@ -203,14 +228,93 @@ export default function App() {
     return checkins[0]?.triageLevel || 'GREEN';
   }, [rufqaState.isLostModeActive, totalAcbScore, checkins]);
 
+  // Trigger Automated Care Circle Triage Shift Notification
+  const triggerCareCircleNotification = (
+    newTriage: TriageLevel,
+    previousTriage: TriageLevel,
+    reasonStr?: string,
+    transcriptSnippet?: string,
+    checkinId?: string
+  ) => {
+    const isRed = newTriage === 'RED';
+    const defaultReason = isRed
+      ? (language === 'ar' ? 'تم رصد إشارات استغاثة أو ألم حاد يستوجب تدخلاً سريرياً عاجلاً' : 'Severe acute pain or fall signal detected requiring immediate clinical intervention.')
+      : (language === 'ar' ? 'تغير ملحوظ في جودة النوم والراحة اليومية مع إرهاق خفيف' : 'Noticeable variance in sleep quality and daytime fatigue requiring family follow-up.');
+
+    const reason = reasonStr || defaultReason;
+
+    const notif: CareCircleTriageNotification = {
+      id: `care-circle-alert-${Date.now()}`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: Date.now(),
+      previousTriage,
+      newTriage,
+      seniorName: senior.preferredName || senior.fullName,
+      reason,
+      transcriptSnippet,
+      notifiedMembers: [
+        { name: 'Maryam (Daughter)', role: 'Primary Caregiver', phone: '+966 50 512 3456', channel: 'SMS', status: 'DELIVERED' },
+        { name: 'Dr. Tariq Al-Ghamdi', role: 'Geriatrician', phone: '+966 12 654 3210', channel: 'PUSH', status: 'DELIVERED' },
+        { name: 'Suhail Al-Hashemi', role: 'Family Care Support', phone: '+966 55 987 6543', channel: 'PUSH', status: 'DELIVERED' }
+      ],
+      keyObservations: [
+        `Triage shift from ${previousTriage} to ${newTriage}`,
+        reason
+      ],
+      checkinId,
+      isRead: false
+    };
+
+    setActiveTriageNotification(notif);
+    setTriageNotificationHistory(prev => [notif, ...prev]);
+
+    // Play crisp synthesized audio cue based on triage priority
+    notificationAudio.playTriageAlertChime(newTriage as any);
+
+    // Send native browser Web Push Notification if permission granted
+    sendCareCircleTriagePushNotification(
+      senior.preferredName || senior.fullName,
+      newTriage as any,
+      reason,
+      language,
+      () => setCurrentMode('family')
+    );
+  };
+
   // Handle New Voice Check-in Record
   const handleCheckinComplete = (record: CheckInRecord) => {
+    const previousTriage = senior.currentTriage || checkins[0]?.triageLevel || 'GREEN';
+
     setCheckins([record, ...checkins]);
     setSenior(prev => ({
       ...prev,
       lastCheckInTime: 'Today, Just now',
       currentTriage: record.triageLevel
     }));
+
+    // Automated Care Circle Notification Logic:
+    // Dispatches automated alert if senior's triage shifts from GREEN to YELLOW, ORANGE, or RED
+    const isShiftFromGreen = previousTriage === 'GREEN' && (
+      record.triageLevel === 'YELLOW' || 
+      record.triageLevel === 'ORANGE' || 
+      record.triageLevel === 'RED'
+    );
+
+    if (isShiftFromGreen) {
+      const reason = (record.keyObservations && record.keyObservations.length > 0)
+        ? record.keyObservations.join(' • ')
+        : (record.sentiment === 'concerning' || record.sentiment === 'distressed'
+            ? (language === 'ar' ? 'تم رصد تقلبات في النوم ونبرة إرهاق أثناء فحص الاطمئنان الصوتي' : 'Fragmented sleep and notable fatigue detected during voice check-in.')
+            : (language === 'ar' ? 'تغير ملحوظ عن خط الأساس الطبيعي للاطمئنان' : 'Meaningful variance from normal baseline detected.'));
+
+      triggerCareCircleNotification(
+        record.triageLevel,
+        previousTriage,
+        reason,
+        record.transcript ? (record.transcript.length > 85 ? record.transcript.substring(0, 85) + '...' : record.transcript) : undefined,
+        record.id
+      );
+    }
 
     // Append to continuous care loop
     const newEvents: CareLoopEvent[] = [
@@ -252,7 +356,52 @@ export default function App() {
       }
     ];
 
+    // If shift from GREEN occurred, add an explicit Care Circle broadcast event to the care loop
+    if (isShiftFromGreen) {
+      newEvents.push({
+        id: `evt-${Date.now()}-carecircle-broadcast`,
+        stage: 'ACT',
+        title: record.triageLevel === 'RED' ? '🚨 Care Circle Emergency Escalation' : '⚠️ Care Circle Triage Shift Broadcast',
+        description: `Automated SMS and Push broadcast sent to Maryam (Daughter) and Dr. Tariq due to triage shift from ${previousTriage} to ${record.triageLevel}.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        triage: record.triageLevel,
+        confidenceScore: 0.99,
+        actor: 'AI_ORCHESTRATOR',
+        consentTier: 'FAMILY_SUPPORT',
+        requiresHumanReview: record.triageLevel === 'RED'
+      });
+    }
+
     setCareLoopEvents(prev => [...newEvents, ...prev]);
+  };
+
+  // Quick Simulation Handler for Testing Triage Shift Notifications
+  const handleSimulateTriageShift = (targetTriage: 'YELLOW' | 'RED') => {
+    const isRed = targetTriage === 'RED';
+    const sampleTranscript = isRed
+      ? (language === 'ar' ? 'سقطت في الممر وشعرت بألم حاد في مفصلي.' : 'I fell near the hallway and felt sharp pain in my joint.')
+      : (language === 'ar' ? 'نمت متقطعاً البارحة وأشعر بثقل خفيف في رأسي ودوخة عند النهوض.' : 'I had broken sleep last night and felt mild dizziness upon standing.');
+
+    const simulatedCheckin: CheckInRecord = {
+      id: `chk-sim-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      transcript: sampleTranscript,
+      sentiment: isRed ? 'distressed' : 'concerning',
+      moodScore: isRed ? 3.0 : 5.0,
+      sleepHours: isRed ? 3.0 : 4.5,
+      sleepQuality: isRed ? 2.5 : 4.0,
+      fatigueScore: isRed ? 8.5 : 6.5,
+      memoryMentioned: !isRed,
+      socialContact: true,
+      triageLevel: targetTriage,
+      agentResponse: language === 'ar' ? 'أنا معكِ يا والدتي الحبيبة، تم إشعار مريم وفريق الرعاية للاطمئنان عليكِ.' : 'I am right here with you. Maryam and your care team have been alerted.',
+      keyObservations: isRed
+        ? ['Acute mobility / pain event flagged', 'Immediate clinical escalation protocol triggered']
+        : ['Sub-baseline sleep quality (4.5h)', 'Mild postural instability signal observed'],
+      consentTierUsed: 'FAMILY_SUPPORT'
+    };
+
+    handleCheckinComplete(simulatedCheckin);
   };
 
   // Toggle Medication Taken
@@ -361,10 +510,15 @@ export default function App() {
             careCircle={MOCK_CARE_CIRCLE}
             longitudinalData={MOCK_LONGITUDINAL_DATA}
             careLoopEvents={careLoopEvents}
+            medications={medications}
+            triageNotifications={triageNotificationHistory}
             onOpenDoctorBrief={() => setIsDoctorBriefModalOpen(true)}
             onNavigateToMode={setCurrentMode}
             language={language}
             totalAcbScore={totalAcbScore}
+            onToggleMedicationTaken={handleToggleMedicationTaken}
+            onTriggerMedicationReminder={handleTriggerReminderToast}
+            onSimulateTriageShift={handleSimulateTriageShift}
           />
         )}
 
@@ -524,6 +678,14 @@ export default function App() {
         onSnooze={handleSnoozeReminder}
         language={language}
         voiceEnabled={voiceEnabled}
+      />
+
+      {/* Automated Care Circle Triage Shift Alert Toast */}
+      <CareCircleTriageToast
+        notification={activeTriageNotification}
+        onDismiss={() => setActiveTriageNotification(null)}
+        onNavigateToFamilyPortal={() => setCurrentMode('family')}
+        language={language}
       />
 
       {/* Minimalist Footnote */}

@@ -33,6 +33,7 @@ interface DailyWellnessSummaryCardProps {
   totalAcbScore: number;
   language: SupportedLanguage;
   onOpenFullModal: () => void;
+  onNavigateToAdherence?: () => void;
   onToggleMedicationTaken?: (id: string) => void;
   onTriggerMedicationReminder?: (med: Medication) => void;
 }
@@ -44,6 +45,7 @@ export const DailyWellnessSummaryCard: React.FC<DailyWellnessSummaryCardProps> =
   totalAcbScore,
   language,
   onOpenFullModal,
+  onNavigateToAdherence,
   onToggleMedicationTaken,
   onTriggerMedicationReminder
 }) => {
@@ -201,14 +203,24 @@ export const DailyWellnessSummaryCard: React.FC<DailyWellnessSummaryCardProps> =
             )}
           </div>
 
-          <p className="text-[11px] text-teal-200/80 flex items-center justify-between">
+          <div className="flex items-center justify-between text-[11px] text-teal-200/80">
             <span>
               {summary.medicationSummary.pendingCount > 0 
                 ? (language === 'ar' ? `⚠️ يتبقى ${summary.medicationSummary.pendingCount} جرعة اليوم` : `⚠️ ${summary.medicationSummary.pendingCount} dose(s) pending`)
                 : (language === 'ar' ? '✓ تم تناول جميع الأدوية' : '✓ All scheduled doses taken')}
             </span>
             <span className="text-amber-300 font-semibold">ACB: {totalAcbScore}</span>
-          </p>
+          </div>
+
+          {onNavigateToAdherence && (
+            <button
+              type="button"
+              onClick={onNavigateToAdherence}
+              className="w-full py-1.5 px-2 rounded-xl bg-white/10 hover:bg-white/20 text-teal-200 hover:text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+            >
+              <span>{language === 'ar' ? 'عرض رسم الالتزام لـ 30 يوماً ←' : 'View 30-Day Adherence Chart →'}</span>
+            </button>
+          )}
         </div>
 
         {/* Pillar 3: Actionable Caregiver Recommendations */}

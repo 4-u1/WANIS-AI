@@ -22,7 +22,8 @@ import {
   BedDouble,
   Info,
   Bell,
-  Radio
+  Radio,
+  Calendar
 } from 'lucide-react';
 import { 
   SeniorProfile, 
@@ -43,6 +44,8 @@ import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
 import { RecentAlertsHistorySection } from './RecentAlertsHistorySection';
 import { FamilyGeminiAdvisorCard } from './FamilyGeminiAdvisorCard';
 import { MedicationCloudSyncIndicator } from '../Notifications/MedicationCloudSyncIndicator';
+import { MedicationAdherenceChart } from './MedicationAdherenceChart';
+import { MedicationAdherenceSummaryCards } from './MedicationAdherenceSummaryCards';
 import { WaneesLogo } from '../WaneesLogo';
 
 interface FamilyViewProps {
@@ -122,7 +125,8 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
     }
   };
 
-  const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'alerts' | 'trends' | 'circle'>('timeline');
+  const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'alerts' | 'adherence' | 'trends' | 'circle'>('timeline');
+  const [adherenceTimeRange, setAdherenceTimeRange] = useState<'30' | '14' | '7'>('30');
   const [quickNote, setQuickNote] = useState('');
   const [notesList, setNotesList] = useState<Array<{ author: string; text: string; time: string }>>([
     {
@@ -275,6 +279,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         totalAcbScore={totalAcbScore}
         language={language}
         onOpenFullModal={() => setIsDailySummaryOpen(true)}
+        onNavigateToAdherence={() => setActiveSubTab('adherence')}
         onToggleMedicationTaken={onToggleMedicationTaken}
         onTriggerMedicationReminder={onTriggerMedicationReminder}
       />
@@ -299,7 +304,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
       />
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-2xl overflow-x-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-3xl overflow-x-auto">
         <button
           onClick={() => setActiveSubTab('timeline')}
           className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'timeline' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
@@ -318,6 +323,20 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
               : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
           }`}>
             {triageNotifications.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveSubTab('adherence')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${activeSubTab === 'adherence' ? 'bg-teal-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+        >
+          <Pill className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'الالتزام بالأدوية (30 يوماً)' : 'Medication Adherence'}</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+            activeSubTab === 'adherence' 
+              ? 'bg-teal-800 text-teal-100' 
+              : 'bg-teal-500/20 text-teal-700 dark:text-teal-300'
+          }`}>
+            30d
           </span>
         </button>
         <button
@@ -554,9 +573,99 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: 14-DAY TRENDS & CHARTS */}
+      {/* TAB 3: 30-DAY MEDICATION ADHERENCE LINE CHART */}
+      {activeSubTab === 'adherence' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Small Summary Cards Above Chart: Total Missed Doses & Current Month Adherence Rate */}
+          <MedicationAdherenceSummaryCards
+            medications={medications}
+            language={language}
+          />
+
+          {/* Quick 30-Day vs 7-Day View Switcher Bar */}
+          <div 
+            id="family-adherence-view-toggle-bar"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                  {language === 'ar' ? 'التحكم في نطاق عرض الرسم البياني' : 'Line Chart Time Window View'}
+                </span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {adherenceTimeRange === '7' 
+                    ? (language === 'ar' ? 'عرض مكبر لآخر 7 أيام لفحص أنماط الالتزام الأخيرة بتفصيل أدق' : 'Zoomed in on 7-Day View: Closer look at recent compliance patterns')
+                    : (language === 'ar' ? 'عرض شامل لآخر 30 يوماً لدراسة الاستقرار الطولي للالتزام' : 'Full 30-Day View: Longitudinal medication compliance and gap tracking')}
+                </p>
+              </div>
+            </div>
+
+            <div 
+              id="family-chart-toggle-pill"
+              className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800/90 rounded-xl self-start sm:self-center border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <button
+                type="button"
+                id="btn-toggle-30day-view"
+                onClick={() => setAdherenceTimeRange('30')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  adherenceTimeRange === '30'
+                    ? 'bg-teal-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'عرض 30 يوماً' : '30-day view'}</span>
+              </button>
+              <button
+                type="button"
+                id="btn-toggle-7day-view"
+                onClick={() => setAdherenceTimeRange('7')}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  adherenceTimeRange === '7'
+                    ? 'bg-teal-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'عرض 7 أيام' : '7-day view'}</span>
+              </button>
+            </div>
+          </div>
+
+          <MedicationAdherenceChart
+            seniorName={senior.preferredName || senior.fullName}
+            medications={medications}
+            timeRange={adherenceTimeRange}
+            onTimeRangeChange={setAdherenceTimeRange}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+        </div>
+      )}
+
+      {/* TAB 4: 14-DAY TRENDS & CHARTS */}
       {activeSubTab === 'trends' && (
         <div className="space-y-6">
+          {/* Small Summary Cards Above Charts: Total Missed Doses & Current Month Adherence Rate */}
+          <MedicationAdherenceSummaryCards
+            medications={medications}
+            language={language}
+          />
+
+          {/* 30-Day Medication Adherence Line Chart Feature in Trends */}
+          <MedicationAdherenceChart
+            seniorName={senior.preferredName || senior.fullName}
+            medications={medications}
+            timeRange={adherenceTimeRange}
+            onTimeRangeChange={setAdherenceTimeRange}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+
           {/* Natural Language Longitudinal Summary Card (Sleep & Social Engagement) */}
           {longitudinalSummary && (
             <div id="family-longitudinal-summary-card" className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-900/90 rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">

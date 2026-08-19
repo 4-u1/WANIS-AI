@@ -29,6 +29,34 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiClient;
 }
 
+// Resilient Gemini Generation with Automatic Model Fallback & Retry
+async function generateWithModelFallback(
+  ai: GoogleGenAI,
+  prompt: string,
+  config?: any,
+  models: string[] = ["gemini-3.7-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"]
+) {
+  let lastError: any = null;
+  for (const model of models) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: config || {}
+      });
+      if (response && (response.text !== undefined || response.candidates)) {
+        return response;
+      }
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[Gemini Gateway] Model '${model}' notice (${err?.status || err?.code || 'error'}), trying fallback model...`);
+      // Brief jitter before trying next model
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+  }
+  throw lastError || new Error("All Gemini models unavailable");
+}
+
 // Real Cryptographic Hash for Clinical Data Provenance
 export function generateDataHash(data: object): string {
   return "sha256-" + crypto
@@ -159,13 +187,9 @@ Return ONLY this JSON — no preamble, no explanation:
   "disclaimer": "AI observation only. Not a medical diagnosis. Clinician review required for ORANGE/RED."
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.2
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.2
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -304,13 +328,9 @@ Return ONLY this JSON:
   "clinicalDisclaimer": "This brief is AI-generated from self-reported check-in data. It does not replace clinical examination. ACB scores require pharmacist verification."
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.2
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.2
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -379,13 +399,9 @@ Return ONLY this JSON:
   "pharmacistReferralRecommended": true
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.2
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.2
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -457,13 +473,9 @@ Return ONLY this JSON:
   "safetyNote": "For real emergencies, call Saudi Red Crescent: 911"
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.3
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.3
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -514,12 +526,8 @@ RULES:
 Senior Context: ${JSON.stringify(context || {})}
 Senior's message: "${message}"`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        temperature: 0.4
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      temperature: 0.4
     });
 
     return res.json({ reply: response.text || getCompanionChatFallback(language) });
@@ -576,13 +584,9 @@ Respond in JSON format:
   "evidenceBasis": "e.g. Beers Criteria 2023 / ACB Scale"
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.2
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.2
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -647,13 +651,9 @@ Respond in JSON:
   "wellnessFocus": "Hydration" | "Sleep" | "Cognitive Stimulation" | "Social Connection" | "Medication Schedule"
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.3
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.3
     });
 
     const parsed = JSON.parse(response.text || "{}");
@@ -706,13 +706,9 @@ Respond in JSON:
   "hints": ["Hint or memory prompt 1", "Hint 2", "Hint 3"]
 }`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        temperature: 0.5
-      }
+    const response = await generateWithModelFallback(ai, prompt, {
+      responseMimeType: "application/json",
+      temperature: 0.5
     });
 
     const parsed = JSON.parse(response.text || "{}");

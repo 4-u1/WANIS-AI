@@ -18,6 +18,7 @@ import {
 import { PersonaMode, SupportedLanguage, TriageLevel } from '../types';
 import { DICTIONARY } from '../data/i18n';
 import { WaneesLogo } from './WaneesLogo';
+import { UserGuideButton } from './Walkthrough/UserGuideButton';
 
 interface NavbarProps {
   currentMode: PersonaMode;
@@ -33,6 +34,9 @@ interface NavbarProps {
   onOpenEmergencyCard: () => void;
   pendingMedicationsCount?: number;
   onOpenReminderCenter?: () => void;
+  onStartTour?: () => void;
+  onOpenProductIntroduction?: () => void;
+  onOpenVoiceGuide?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -48,7 +52,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenHowToUse,
   onOpenEmergencyCard,
   pendingMedicationsCount = 0,
-  onOpenReminderCenter
+  onOpenReminderCenter,
+  onStartTour,
+  onOpenProductIntroduction,
+  onOpenVoiceGuide
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
@@ -105,18 +112,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Quick Actions / Triage / SOS / Settings */}
           <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
             
-            {/* Prominent "How to Use" Button */}
-            <button
-              id="btn-how-to-use-navbar"
-              onClick={onOpenHowToUse}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:hover:bg-teal-900/80 dark:text-teal-200 border border-teal-200 dark:border-teal-800 shadow-2xs transition-all active:scale-95 group"
-              title="Platform Walkthrough, Guided Tour & Help"
-            >
-              <HelpCircle className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:rotate-12 transition-transform shrink-0" />
-              <span className="font-extrabold hidden sm:inline">
-                {language === 'ar' ? '؟ دليل الاستخدام' : language === 'fr' ? '? Comment utiliser' : '? How to Use'}
-              </span>
-            </button>
+            {/* Upgraded React "User Guide / دليل الاستخدام" Component */}
+            <UserGuideButton
+              language={language}
+              onOpenHowToUse={onOpenHowToUse}
+              onStartTour={onStartTour}
+              onOpenProductIntroduction={onOpenProductIntroduction}
+              onOpenVoiceGuide={onOpenVoiceGuide}
+            />
 
             {/* Triage Level Indicator */}
             <div className={`hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${triageBadgeColor}`}>

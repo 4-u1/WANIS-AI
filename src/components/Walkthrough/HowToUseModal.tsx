@@ -23,9 +23,10 @@ import {
   Sliders,
   FileText
 } from 'lucide-react';
-import { SupportedLanguage, PersonaMode } from '../../types';
+import { SupportedLanguage, PersonaMode, SeniorProfile, Medication, CheckInRecord } from '../../types';
 import { FEATURE_GUIDE_ITEMS, FAQ_ITEMS, CONTEXTUAL_HELP_ITEMS } from '../../data/walkthroughData';
 import { WaneesLogo } from '../WaneesLogo';
+import { ContextualFactorsWidget } from '../Common/ContextualFactorsWidget';
 
 interface HowToUseModalProps {
   isOpen: boolean;
@@ -38,6 +39,9 @@ interface HowToUseModalProps {
   onToggleVoice: () => void;
   onOpenContextualHelp: (topic: string) => void;
   onOpenProductIntroduction?: () => void;
+  senior?: SeniorProfile;
+  medications?: Medication[];
+  latestCheckIn?: CheckInRecord;
 }
 
 type TabType = 'start' | 'features' | 'faq' | 'accessibility' | 'rufqa-safety';
@@ -52,7 +56,10 @@ export const HowToUseModal: React.FC<HowToUseModalProps> = ({
   voiceEnabled,
   onToggleVoice,
   onOpenContextualHelp,
-  onOpenProductIntroduction
+  onOpenProductIntroduction,
+  senior,
+  medications,
+  latestCheckIn
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('start');
   const [searchQuery, setSearchQuery] = useState('');
@@ -304,6 +311,14 @@ export const HowToUseModal: React.FC<HowToUseModalProps> = ({
 
                 </div>
               </div>
+
+              {/* Real-time Contextual Factors Data Visualization Widget */}
+              <ContextualFactorsWidget
+                language={language}
+                senior={senior}
+                medications={medications}
+                latestCheckIn={latestCheckIn}
+              />
 
               {/* Show Me How Guided Workflows */}
               <div className="space-y-3">

@@ -15,19 +15,28 @@ import {
   ArrowLeft,
   Users,
   Bell,
-  HelpCircle
+  HelpCircle,
+  Brain
 } from 'lucide-react';
 import { SeniorProfile, CheckInRecord, Medication, SupportedLanguage, PersonaMode, CareCircleMember } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { SeniorVoiceAssistant } from './SeniorVoiceAssistant';
 import { SeniorMedicationView } from './SeniorMedicationView';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
+import { HowWaneesUnderstandsModal } from './HowWaneesUnderstandsModal';
+import { SeniorAiHealthSummaryCard } from './SeniorAiHealthSummaryCard';
+import { SeniorVoiceShortcutsTip } from './SeniorVoiceShortcutsTip';
+import { SeniorCognitiveTrends } from './SeniorCognitiveTrends';
+import { DailyCognitiveGoalTracker } from './DailyCognitiveGoalTracker';
+import { SeniorSuggestedSocialActivity } from './SeniorSuggestedSocialActivity';
 import { WaneesLogo } from '../WaneesLogo';
+import { LongitudinalMetrics } from '../../types';
 
 interface SeniorViewProps {
   senior: SeniorProfile;
   latestCheckIn?: CheckInRecord;
   medications: Medication[];
+  longitudinalData?: LongitudinalMetrics[];
   onOpenCheckinModal: () => void;
   onToggleMedicationTaken: (id: string) => void;
   onNavigateToMode: (mode: PersonaMode) => void;
@@ -45,6 +54,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   senior,
   latestCheckIn,
   medications = [],
+  longitudinalData,
   onOpenCheckinModal,
   onToggleMedicationTaken,
   onNavigateToMode,
@@ -59,10 +69,18 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
 }) => {
   const t = DICTIONARY[language];
   const isRtl = language === 'ar';
-  const [activeTab, setActiveTab] = useState<'overview' | 'meds' | 'chat'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'meds' | 'trends' | 'chat'>('overview');
+  const [isHowWaneesUnderstandsOpen, setIsHowWaneesUnderstandsOpen] = useState(false);
   const safeMedications = medications || [];
 
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+
+  const handleOpenHowWaneesUnderstands = () => {
+    setIsHowWaneesUnderstandsOpen(true);
+    if (onOpenContextualHelp) {
+      onOpenContextualHelp('voice-checkin');
+    }
+  };
 
   return (
     <div id="senior-view-container" className="space-y-6 animate-fadeIn">
@@ -81,17 +99,18 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 {language === 'ar' ? 'ونيس — رفيقك الصحي الدائم' : 'Wanees — Your Daily Companion'}
               </span>
-              {onOpenContextualHelp && (
-                <button
-                  type="button"
-                  onClick={() => onOpenContextualHelp('voice-checkin')}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors"
-                  title="How does Wanees analyze check-ins?"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>{language === 'ar' ? 'كيف يفهمني ونيس؟' : 'How does check-in work?'}</span>
-                </button>
-              )}
+
+              {/* Upgraded "How Does Wanees Understand Me?" Interactive React Button */}
+              <button
+                type="button"
+                id="btn-how-wanees-understands-hero"
+                onClick={handleOpenHowWaneesUnderstands}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/25 hover:bg-amber-400/40 text-amber-200 hover:text-white transition-all border border-amber-300/40 shadow-xs cursor-pointer active:scale-95"
+                title={language === 'ar' ? 'اكتشف كيف يحلل ونيس نبرتك ولهجتك ويفهمك' : 'Discover how Wanees parses your voice and dialect'}
+              >
+                <Brain className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                <span>{language === 'ar' ? 'كيف يفهمني ونيس؟' : 'How does check-in work?'}</span>
+              </button>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {t.goodMorning}
@@ -106,7 +125,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
             <button
               id="start-voice-checkin-hero-btn"
               onClick={onOpenCheckinModal}
-              className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-base sm:text-lg shadow-lg shadow-amber-400/30 flex items-center justify-center gap-3 transition-transform active:scale-95 group"
+              className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-base sm:text-lg shadow-lg shadow-amber-400/30 flex items-center justify-center gap-3 transition-transform active:scale-95 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-xl bg-amber-950/10 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                 <Mic className="w-6 h-6 text-amber-950" />
@@ -117,7 +136,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
             <button
               id="goto-rufqa-hero-btn"
               onClick={() => onNavigateToMode('rufqa')}
-              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/20"
+              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/20 cursor-pointer"
             >
               <Compass className="w-5 h-5 text-amber-300 shrink-0" />
               <span>{language === 'ar' ? 'رفقة الحج والعمرة' : 'Rufqa Pilgrimage'}</span>
@@ -127,11 +146,11 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
       </section>
 
       {/* Sub-Navigation Tabs for Senior */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:max-w-md overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:max-w-lg overflow-x-auto scrollbar-none">
         <button
           id="senior-tab-overview"
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           {language === 'ar' ? 'اليوميات' : 'Daily Wellbeing'}
         </button>
@@ -139,204 +158,155 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         <button
           id="senior-tab-meds"
           onClick={() => setActiveTab('meds')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          {language === 'ar' ? 'أدويتي' : 'Medications'}
+          {t.medicationTracker}
+        </button>
+
+        <button
+          id="senior-tab-trends"
+          onClick={() => setActiveTab('trends')}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 text-teal-700 dark:text-teal-300 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+        >
+          {language === 'ar' ? 'مؤشرات المزاج والنوم' : 'Cognitive Trends'}
         </button>
 
         <button
           id="senior-tab-chat"
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          {language === 'ar' ? 'محادثة ونيس' : 'Voice Chat'}
+          {language === 'ar' ? 'محادثة ونيس' : 'Voice Companion'}
         </button>
       </div>
 
-      {/* Main Tab Content */}
+      {/* TAB CONTENT */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Left / Main 2-Columns */}
+          {/* Left / Center 2 Cols: Senior Daily Summary & Fast Actions */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Latest Conversation & Highlight */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-950 flex items-center justify-center text-teal-600">
-                    <HeartHandshake className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                    {t.recentCheckin}
-                  </h3>
-                </div>
-                <span className="text-xs text-slate-400 font-medium">
-                  {senior.lastCheckInTime}
-                </span>
-              </div>
+            {/* Short Natural Language Health Status Summary (AI Insight) */}
+            <SeniorAiHealthSummaryCard
+              senior={senior}
+              latestCheckIn={latestCheckIn}
+              medications={safeMedications}
+              totalAcbScore={totalAcbScore}
+              language={language}
+              voiceEnabled={voiceEnabled}
+            />
 
-              {latestCheckIn ? (
-                <div className="space-y-3">
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 italic">
-                      "{latestCheckIn.transcript}"
-                    </p>
-                  </div>
-
-                  {latestCheckIn.agentResponse && (
-                    <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center shrink-0">
-                        <Volume2 className="w-4 h-4" />
-                      </div>
-                      <p className="text-sm font-medium text-teal-900 dark:text-teal-200">
-                        "{latestCheckIn.agentResponse}"
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <Bell className="w-3.5 h-3.5 text-teal-600" />
-                    <span>{t.familyNotice}</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {language === 'ar' ? 'لم يتم تسجيل فحص صوتي اليوم بعد. اضغطي الزر أعلاه للاطمئنان.' : 'No check-in recorded yet today. Tap start check-in above.'}
-                </p>
-              )}
-            </div>
-
-            {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Quick Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
-              {/* Mood & Spirit Card */}
-              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-                <div className="flex items-center justify-between text-emerald-600">
-                  <Smile className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Mood</span>
-                </div>
-                <div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {latestCheckIn ? `${latestCheckIn.moodScore}/10` : '8.5/10'}
-                  </span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {language === 'ar' ? 'راحة وطمأنينة مستقرة' : 'Peaceful & Steady'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Sleep Duration */}
-              <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
-                <div className="flex items-center justify-between text-indigo-600">
-                  <Moon className="w-6 h-6" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Sleep</span>
-                </div>
-                <div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {latestCheckIn ? `${latestCheckIn.sleepHours} hrs` : '7.0 hrs'}
-                  </span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {language === 'ar' ? 'نوم متقطع خفيف' : 'Slight fragmentation'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Medication Compliance */}
-              <button
-                type="button"
+              {/* Today's Medication Card */}
+              <div 
+                id="senior-meds-summary-card"
                 onClick={() => setActiveTab('meds')}
-                className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 text-left transition-all hover:border-teal-400 group cursor-pointer"
-                title="View today's medications and reminders"
+                className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-teal-500/50 transition-all cursor-pointer group"
               >
-                <div className="flex items-center justify-between text-teal-600">
-                  <Pill className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                    <Bell className="w-3 h-3 text-teal-500" />
-                    Meds
-                  </span>
-                </div>
-                <div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {safeMedications.filter(m => m.isTakenToday).length}/{safeMedications.length}
-                  </span>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center justify-between">
-                    <span>{language === 'ar' ? 'جرعات اليوم المكتملة' : 'Doses taken today'}</span>
-                    <span className="text-[11px] text-teal-600 dark:text-teal-400 font-bold group-hover:underline">
-                      {language === 'ar' ? 'عرض التنبيهات ←' : 'View →'}
-                    </span>
-                  </p>
-                </div>
-              </button>
-
-            </div>
-
-            {/* Quick Link to Rufqa, Care Circle & Emergency Card */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              
-              {/* Digital Emergency Card Quick Tile */}
-              <button
-                id="senior-view-emergency-card-btn"
-                onClick={onOpenEmergencyCard}
-                className="p-5 rounded-3xl bg-gradient-to-r from-slate-900 to-teal-950 border-2 border-teal-500/40 hover:border-teal-400 text-left text-white shadow-md transition-all flex flex-col justify-between group"
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="w-11 h-11 rounded-2xl bg-teal-500/20 border border-teal-400/40 text-teal-300 flex items-center justify-center shadow-sm">
-                    <ShieldAlert className="w-6 h-6 text-amber-300" />
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                    <Pill className="w-6 h-6" />
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30">
-                    O+ POS
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 dark:bg-teal-950 dark:text-teal-300">
+                    {safeMedications.filter(m => m.isTakenToday).length} / {safeMedications.length} {language === 'ar' ? 'تم أخذها' : 'taken'}
                   </span>
                 </div>
                 <div className="my-3">
-                  <h4 className="font-extrabold text-base text-white">
-                    {language === 'ar' ? 'بطاقة الطوارئ والهوية' : 'Emergency Safety Card'}
-                  </h4>
-                  <p className="text-xs text-teal-200/80 mt-0.5">
-                    {language === 'ar' ? 'الحساسية وجهات الاتصال ورمز QR' : 'Allergies, SOS & Secure QR'}
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                    {t.myMedications}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {safeMedications.length > 0 
+                      ? (language === 'ar' ? `الجرعة القادمة: ${safeMedications[0].name} (${safeMedications[0].dosage})` : `Next dose: ${safeMedications[0].name}`)
+                      : (language === 'ar' ? 'لا توجد أدوية متبقية اليوم' : 'No medications remaining')}
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-xs text-amber-300 font-bold">
-                  <span>{language === 'ar' ? 'عرض البطاقة الذكية' : 'View Digital ID'}</span>
-                  <ArrowIcon className="w-4 h-4 text-amber-300 group-hover:translate-x-1 transition-transform" />
+                <div className="flex items-center justify-between text-xs text-teal-600 dark:text-teal-400 font-bold">
+                  <span>{language === 'ar' ? 'عرض جدول الأدوية' : 'View full schedule'}</span>
+                  <ArrowIcon className="w-4 h-4 text-teal-600 group-hover:translate-x-1 transition-transform" />
                 </div>
-              </button>
+              </div>
 
-              <button
-                onClick={() => onNavigateToMode('rufqa')}
-                className="p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-300 dark:border-amber-800 hover:bg-amber-500/20 text-left transition-all flex flex-col justify-between group"
+              {/* Latest Check-In Pulse Card */}
+              <div 
+                id="senior-checkin-summary-card"
+                onClick={onOpenCheckinModal}
+                className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-amber-500/50 transition-all cursor-pointer group"
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
-                    <Compass className="w-6 h-6" />
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <Smile className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-2 py-0.5 rounded-full">
-                    Gate 79
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                    {latestCheckIn ? (language === 'ar' ? 'جلسة اليوم مكتملة' : 'Completed') : (language === 'ar' ? 'في انتظارك' : 'Pending')}
                   </span>
                 </div>
                 <div className="my-3">
-                  <h4 className="font-bold text-base text-slate-900 dark:text-white">
-                    {language === 'ar' ? 'رفقة — أمان الحرم' : 'Rufqa Haram Safety'}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {language === 'ar' ? 'بطاقة السكن والفوج' : 'Hotel card & leader'}
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                    {language === 'ar' ? 'جلسة الاطمئنان الصباحي' : 'Daily Voice Check-in'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    {latestCheckIn 
+                      ? (language === 'ar' ? `آخر تسجيل: ${latestCheckIn.timestamp}` : `Last recorded at ${latestCheckIn.timestamp}`)
+                      : (language === 'ar' ? 'ابدأ الآن وتحدث مع ونيس بصوتك' : 'Tap to start your check-in')}
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-bold">
-                  <span>{language === 'ar' ? 'فتح نمط الحج' : 'Open Pilgrimage'}</span>
+                <div className="flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-bold">
+                  <span>{latestCheckIn ? (language === 'ar' ? 'إجراء جلسة جديدة' : 'Record another check-in') : (language === 'ar' ? 'ابدأ التحدث' : 'Start now')}</span>
                   <ArrowIcon className="w-4 h-4 text-amber-600 group-hover:translate-x-1 transition-transform" />
                 </div>
-              </button>
+              </div>
 
+            </div>
+
+            {/* Quick Portals to Other Modes for Exploration */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Emergency Card Quick Button */}
+              {onOpenEmergencyCard && (
+                <button
+                  type="button"
+                  id="senior-open-emergency-card-btn"
+                  onClick={onOpenEmergencyCard}
+                  className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-rose-500/50 transition-all text-left rtl:text-right cursor-pointer group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                      <ShieldAlert className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                      {senior.gender === 'female' ? 'أم أحمد' : senior.fullName}
+                    </span>
+                  </div>
+                  <div className="my-3">
+                    <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                      {language === 'ar' ? 'بطاقة الطوارئ والهوية الصحية' : 'Digital Emergency Card'}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {language === 'ar' ? 'فصيلة الدم، الحساسية، ورمز المسعفين' : 'Blood type, allergies & QR pass'}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-400 font-bold">
+                    <span>{language === 'ar' ? 'عرض بطاقتي الرقمية' : 'Open My Card'}</span>
+                    <ArrowIcon className="w-4 h-4 text-rose-600 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              )}
+
+              {/* Family Circle Quick Button */}
               <button
+                type="button"
+                id="senior-goto-family-portal-btn"
                 onClick={() => onNavigateToMode('family')}
-                className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-left transition-all flex flex-col justify-between group"
+                className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm hover:border-indigo-500/50 transition-all text-left rtl:text-right cursor-pointer group"
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                     <Users className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
                     Maryam
                   </span>
                 </div>
@@ -355,10 +325,33 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
               </button>
             </div>
 
+            {/* Daily Cognitive Goal Tracker & 3-Day Reward Milestone */}
+            <DailyCognitiveGoalTracker
+              language={language}
+              senior={senior}
+              latestCheckIn={latestCheckIn}
+              onOpenCheckinModal={onOpenCheckinModal}
+            />
+
+            {/* 7-Day Cognitive & Wellbeing Trends Section */}
+            <SeniorCognitiveTrends data={longitudinalData} language={language} />
+
+            {/* Suggested Social & Calming Activities Widget */}
+            <SeniorSuggestedSocialActivity
+              senior={senior}
+              latestCheckIn={latestCheckIn}
+              careCircle={careCircle}
+              language={language}
+              onOpenCheckinModal={onOpenCheckinModal}
+            />
+
+            {/* Voice Shortcuts & Natural Commands Info-Tip */}
+            <SeniorVoiceShortcutsTip language={language} />
+
           </div>
 
           {/* Right Column: Embedded Voice Assistant */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             <SeniorVoiceAssistant language={language} voiceEnabled={voiceEnabled} />
           </div>
 
@@ -377,11 +370,42 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         />
       )}
 
-      {activeTab === 'chat' && (
-        <div className="max-w-2xl mx-auto">
-          <SeniorVoiceAssistant language={language} voiceEnabled={voiceEnabled} />
+      {activeTab === 'trends' && (
+        <div className="max-w-4xl mx-auto space-y-6">
+          <DailyCognitiveGoalTracker
+            language={language}
+            senior={senior}
+            latestCheckIn={latestCheckIn}
+            onOpenCheckinModal={onOpenCheckinModal}
+          />
+          <SeniorCognitiveTrends data={longitudinalData} language={language} />
+          <SeniorSuggestedSocialActivity
+            senior={senior}
+            latestCheckIn={latestCheckIn}
+            careCircle={careCircle}
+            language={language}
+            onOpenCheckinModal={onOpenCheckinModal}
+          />
+          <SeniorVoiceShortcutsTip language={language} />
         </div>
       )}
+
+      {activeTab === 'chat' && (
+        <div className="max-w-2xl mx-auto space-y-4">
+          <SeniorVoiceAssistant language={language} voiceEnabled={voiceEnabled} />
+          <SeniorVoiceShortcutsTip language={language} />
+        </div>
+      )}
+
+      {/* Upgraded Professional React Modal: How Wanees Understands Me */}
+      <HowWaneesUnderstandsModal
+        isOpen={isHowWaneesUnderstandsOpen}
+        onClose={() => setIsHowWaneesUnderstandsOpen(false)}
+        language={language}
+        senior={senior}
+        medications={medications}
+        latestCheckIn={latestCheckIn}
+      />
 
     </div>
   );

@@ -313,6 +313,31 @@ export const CONTEXTUAL_HELP_ITEMS: Record<string, ContextualHelpItem> = {
     },
     relatedFeature: 'senior'
   },
+  'voice-checkin': {
+    id: 'help-voice-checkin',
+    topic: 'voice-checkin',
+    title: {
+      en: 'How does Wanees understand me? (Voice & Dialect Intelligence)',
+      ar: 'كيف يفهمني ونيس؟ (الذكاء الصوتي وتحليل اللهجات)',
+      fr: 'Comment Wanees me comprend-il ? (Intelligence Vocale)'
+    },
+    shortAnswer: {
+      en: 'Wanees uses compassionate clinical voice AI that understands regional Arabic dialects, parses emotional tone, logs sleep and medication adherence, and coordinates seamlessly with your Care Circle.',
+      ar: 'يستخدم ونيس ذكاءً اصطناعياً سريرياً متعاطفاً يفهم اللهجات العربية ونبرة الصوت العفوية، ويستخلص تلقائياً مؤشرات النوم والراحة والالتزام الدوائي بموجب مصفوفة الخصوصية التامة.',
+      fr: 'Wanees écoute avec bienveillance, comprend les dialectes arabes et extrait les indicateurs de sommeil et de prise de médicaments.'
+    },
+    detailedExplanation: {
+      en: 'When you speak naturally to Wanees, the pipeline extracts sentiment, sleep duration, and medication mentions in real-time, providing immediate voice reassurance while updating your longitudinal care metrics without medical diagnosis overreach.',
+      ar: 'عندما تتحدث بعفوية مع ونيس، يستخلص النظام المشاعر، وعدد ساعات النوم، وأسماء الأدوية المأخوذة فوراً، ويجيبك بصوت دافئ ومريح مع تحديث السجل التراكمي لطبيبك وعائلتك بأمان.',
+      fr: 'Wanees analyse vos propos en temps réel pour rassurer vocalement le senior et tenir le cercle de soins informé.'
+    },
+    clinicalNote: {
+      en: 'Privacy Guarantee: Your voice recordings are strictly protected by 4-Tier consent and never shared without authorization.',
+      ar: 'ضمان الخصوصية: تسجيلاتك الصوتية مشفرة ومحكومة بموافقة مصفوفة الخصوصية ولا تُشارك إلا بإذنك الصريح.',
+      fr: 'Garantie de confidentialité : Vos enregistrements sont chiffrés et protégés.'
+    },
+    relatedFeature: 'senior'
+  },
   emergencyCard: {
     id: 'help-emergency-card',
     topic: 'emergencyCard',

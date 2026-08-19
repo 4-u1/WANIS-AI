@@ -614,6 +614,9 @@ export default function App() {
         onOpenEmergencyCard={() => setIsEmergencyCardModalOpen(true)}
         pendingMedicationsCount={pendingMedications.length}
         onOpenReminderCenter={() => setIsReminderModalOpen(true)}
+        onStartTour={() => setIsTourActive(true)}
+        onOpenProductIntroduction={() => setIsProductIntroOpen(true)}
+        onOpenVoiceGuide={() => handleOpenContextualHelp('voice-checkin')}
       />
 
       {/* Main Content Area */}
@@ -624,6 +627,7 @@ export default function App() {
             senior={senior}
             latestCheckIn={checkins[0]}
             medications={medications}
+            longitudinalData={MOCK_LONGITUDINAL_DATA}
             careCircle={MOCK_CARE_CIRCLE}
             onOpenCheckinModal={() => setIsCheckinModalOpen(true)}
             onToggleMedicationTaken={handleToggleMedicationTaken}
@@ -782,6 +786,9 @@ export default function App() {
         onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
         onOpenContextualHelp={handleOpenContextualHelp}
         onOpenProductIntroduction={() => setIsProductIntroOpen(true)}
+        senior={senior}
+        medications={medications}
+        latestCheckIn={checkins[0]}
       />
 
       {/* Contextual Understanding Modal (? Popups) */}

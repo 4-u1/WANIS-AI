@@ -9,8 +9,13 @@
 [![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Google Gemini API](https://img.shields.io/badge/Google_Gemini-2.5-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Node.js & Express](https://img.shields.io/badge/Express-Backend-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![Vite](https://img.shields.io/badge/Vite_6-Bundler-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Live Platform](https://img.shields.io/badge/Live_Platform-Cloud_Run-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://wanisai-senior-cognitive-intelligence-467968797278.europe-west2.run.app)
 [![Compliance](https://img.shields.io/badge/PDPL_&_HIPAA-Aligned-10B981?style=for-the-badge&logo=shield&logoColor=white)](#-data-governance--consent-matrix)
+
+<p align="center">
+  <b>🌐 رابط المنصة المباشر | Live Production Platform:</b><br>
+  <a href="https://wanisai-senior-cognitive-intelligence-467968797278.europe-west2.run.app" target="_blank"><b>https://wanisai-senior-cognitive-intelligence-467968797278.europe-west2.run.app</b></a>
+</p>
 
 <p align="center">
   <b>منصة سريرية متقدمة مبنية بذكاء اصطناعي مسؤول لرصد المؤشرات المعرفية المبكرة، إدارة العبء الكوليني للأدوية (ACB)، وتنسيق دوائر الرعاية الأسرية والطبية في العالم العربي.</b><br>
@@ -279,6 +284,11 @@ npm run build
 # تشغيل خادم الإنتاج
 npm start
 ```
+
+### رابط المنصة المباشر على السحابة (Live Cloud Deployment)
+
+يمكن الوصول إلى النسخة السحابية المنشورة والمباشرة عبر الرابط التالي:
+🌐 **[https://wanisai-senior-cognitive-intelligence-467968797278.europe-west2.run.app](https://wanisai-senior-cognitive-intelligence-467968797278.europe-west2.run.app)**
 
 ---
 

@@ -16,7 +16,8 @@ import {
   ExternalLink,
   Share2,
   HelpCircle,
-  Stethoscope
+  Stethoscope,
+  Printer
 } from 'lucide-react';
 import { EmergencyCardData, SupportedLanguage } from '../../types';
 import { EMERGENCY_TRANSLATIONS } from '../../data/emergencyCardData';
@@ -27,6 +28,7 @@ interface EmergencyFastViewProps {
   language: SupportedLanguage;
   onSelectLanguage: (lang: SupportedLanguage) => void;
   onClose: () => void;
+  onOpenPrintModal?: () => void;
   voiceEnabled: boolean;
 }
 
@@ -35,6 +37,7 @@ export const EmergencyFastView: React.FC<EmergencyFastViewProps> = ({
   language,
   onSelectLanguage,
   onClose,
+  onOpenPrintModal,
   voiceEnabled
 }) => {
   const t = EMERGENCY_TRANSLATIONS[language] || EMERGENCY_TRANSLATIONS.en;
@@ -369,6 +372,31 @@ export const EmergencyFastView: React.FC<EmergencyFastViewProps> = ({
             {lostBeaconActive ? (language === 'ar' ? 'جاري البث المستمر...' : 'Broadcasting Beacon...') : (language === 'ar' ? 'تشغيل نداء الحرم' : 'Activate Haram Beacon')}
           </span>
         </button>
+
+        {/* Print / Save Emergency Sheet PDF */}
+        {onOpenPrintModal && (
+          <button
+            type="button"
+            onClick={onOpenPrintModal}
+            className="p-4 rounded-3xl bg-slate-900 text-white hover:bg-slate-800 border border-slate-700 transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="text-xs font-black uppercase tracking-wide flex items-center gap-1.5">
+                <Printer className="w-4 h-4 text-teal-400" />
+                <span>{language === 'ar' ? 'طباعة تقرير الطوارئ' : 'Print PDF Sheet'}</span>
+              </span>
+              <span className="text-[9px] bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full font-bold">
+                A4 / PDF
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 my-2 leading-relaxed">
+              {language === 'ar' ? 'توليد وطباعة وثيقة رسمية مبسطة وعالية التباين للمستشفى والمسعفين.' : 'Generate simplified high-contrast printable document for ER team.'}
+            </p>
+            <span className="text-[10px] font-bold text-teal-400">
+              {language === 'ar' ? 'فتح معاينة الطباعة' : 'Open Print Preview'}
+            </span>
+          </button>
+        )}
 
         {/* Send Emergency SMS Message Template */}
         <a

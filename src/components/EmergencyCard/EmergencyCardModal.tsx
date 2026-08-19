@@ -17,7 +17,8 @@ import {
   Heart,
   Sparkles,
   Compass,
-  AlertTriangle
+  AlertTriangle,
+  Printer
 } from 'lucide-react';
 import { EmergencyCardData, SupportedLanguage, Medication } from '../../types';
 import { DigitalWalletCard } from './DigitalWalletCard';
@@ -26,6 +27,7 @@ import { EmergencyResponderWebView } from './EmergencyResponderWebView';
 import { EmergencyShareModal } from './EmergencyShareModal';
 import { EmergencyCardWizard } from './EmergencyCardWizard';
 import { EmergencyAuditDrawer } from './EmergencyAuditDrawer';
+import { EmergencyCardPrintModal } from './EmergencyCardPrintModal';
 import { EMERGENCY_TRANSLATIONS } from '../../data/emergencyCardData';
 import { speakText } from '../../services/api';
 
@@ -60,6 +62,7 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
   const [isAuditOpen, setIsAuditOpen] = useState<boolean>(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [seniorFontLarge, setSeniorFontLarge] = useState<boolean>(false);
   const [reviewedBanner, setReviewedBanner] = useState<boolean>(false);
 
@@ -250,6 +253,16 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
 
             <button
               type="button"
+              id="tab-btn-print-card"
+              onClick={() => setIsPrintModalOpen(true)}
+              className="pb-2.5 px-3 font-bold text-xs sm:text-sm text-slate-500 hover:text-teal-600 flex items-center gap-1.5"
+            >
+              <Printer className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              <span>{language === 'ar' ? 'طباعة / تصدير PDF' : 'Print / PDF'}</span>
+            </button>
+
+            <button
+              type="button"
               id="tab-btn-audit-logs"
               onClick={() => setIsAuditOpen(true)}
               className="pb-2.5 px-3 font-bold text-xs sm:text-sm text-slate-500 hover:text-teal-600 flex items-center gap-1.5"
@@ -261,6 +274,17 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0 pb-2">
+            <button
+              type="button"
+              id="btn-quick-print-top"
+              onClick={() => setIsPrintModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              title="Print Emergency Sheet"
+            >
+              <Printer className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>{language === 'ar' ? 'طباعة البطاقة' : 'Print PDF'}</span>
+            </button>
+
             <button
               type="button"
               id="btn-edit-emergency-profile"
@@ -296,6 +320,7 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
               onTogglePilgrimageMode={() => setIsPilgrimageMode(!isPilgrimageMode)}
               onOpenFastEmergencyView={() => setActiveTab('emergency-view')}
               onOpenPublicWebView={() => setIsPublicWebViewOpen(true)}
+              onOpenPrintModal={() => setIsPrintModalOpen(true)}
               onReviewCard={handleReviewCard}
               voiceEnabled={voiceEnabled}
             />
@@ -305,6 +330,7 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
               language={language}
               onSelectLanguage={onSelectLanguage}
               onClose={() => setActiveTab('card')}
+              onOpenPrintModal={() => setIsPrintModalOpen(true)}
               voiceEnabled={voiceEnabled}
             />
           )}
@@ -353,6 +379,14 @@ export const EmergencyCardModal: React.FC<EmergencyCardModalProps> = ({
         onClose={() => setIsAuditOpen(false)}
         logs={cardData.accessAuditLogs}
         language={language}
+      />
+
+      <EmergencyCardPrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        cardData={cardData}
+        medications={medications}
+        initialLanguage={language}
       />
 
     </div>

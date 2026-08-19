@@ -21,7 +21,8 @@ import {
   Info,
   ChevronRight,
   HelpCircle,
-  Volume2
+  Volume2,
+  Printer
 } from 'lucide-react';
 import { EmergencyCardData, SupportedLanguage, Medication } from '../../types';
 import { EMERGENCY_TRANSLATIONS } from '../../data/emergencyCardData';
@@ -36,6 +37,7 @@ interface DigitalWalletCardProps {
   onTogglePilgrimageMode: () => void;
   onOpenFastEmergencyView: () => void;
   onOpenPublicWebView: () => void;
+  onOpenPrintModal?: () => void;
   onReviewCard: () => void;
   voiceEnabled: boolean;
 }
@@ -48,6 +50,7 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
   onTogglePilgrimageMode,
   onOpenFastEmergencyView,
   onOpenPublicWebView,
+  onOpenPrintModal,
   onReviewCard,
   voiceEnabled
 }) => {
@@ -464,26 +467,40 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
       </div>
 
       {/* Quick Launch Action Bar Below Card */}
-      <div className="w-full max-w-md grid grid-cols-2 gap-2.5 pt-1">
-        <button
-          type="button"
-          id="btn-open-fast-emergency-view"
-          onClick={onOpenFastEmergencyView}
-          className="py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-600/25 transition-transform active:scale-95"
-        >
-          <ShieldAlert className="w-4 h-4 animate-bounce" />
-          <span>{t.emergencyView}</span>
-        </button>
+      <div className="w-full max-w-md flex flex-col gap-2 pt-1">
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            id="btn-open-fast-emergency-view"
+            onClick={onOpenFastEmergencyView}
+            className="py-3 px-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-600/25 transition-transform active:scale-95"
+          >
+            <ShieldAlert className="w-4 h-4 animate-bounce" />
+            <span>{t.emergencyView}</span>
+          </button>
 
-        <button
-          type="button"
-          id="btn-preview-public-web-view"
-          onClick={onOpenPublicWebView}
-          className="py-3 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-colors"
-        >
-          <QrCode className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-          <span>{t.previewPublicWeb}</span>
-        </button>
+          <button
+            type="button"
+            id="btn-preview-public-web-view"
+            onClick={onOpenPublicWebView}
+            className="py-3 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-colors"
+          >
+            <QrCode className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <span>{t.previewPublicWeb}</span>
+          </button>
+        </div>
+
+        {onOpenPrintModal && (
+          <button
+            type="button"
+            id="btn-open-print-preview-bottom"
+            onClick={onOpenPrintModal}
+            className="w-full py-2.5 px-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+          >
+            <Printer className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+            <span>{language === 'ar' ? 'طباعة تقرير الطوارئ الطبي (PDF / A4)' : 'Print Emergency Medical Sheet (PDF / A4)'}</span>
+          </button>
+        )}
       </div>
 
     </div>

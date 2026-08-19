@@ -9,10 +9,12 @@ import {
   HeartHandshake, 
   Coffee, 
   Sun, 
-  BookOpen 
+  BookOpen,
+  BrainCircuit,
+  MessageCircleQuestion
 } from 'lucide-react';
 import { SupportedLanguage } from '../../types';
-import { sendCompanionChat, speakText } from '../../services/api';
+import { sendCompanionChat, fetchCognitiveExercise, speakText } from '../../services/api';
 
 interface SeniorVoiceAssistantProps {
   language: SupportedLanguage;
@@ -36,6 +38,7 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isExercising, setIsExercising] = useState(false);
 
   const quickTopics = {
     ar: [
@@ -54,6 +57,35 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
       'Conseils pour bien dormir ce soir'
     ]
   }[language];
+
+  const handleStartCognitiveExercise = async () => {
+    setIsExercising(true);
+    setIsLoading(true);
+    try {
+      const exercise = await fetchCognitiveExercise({
+        topicType: 'nostalgia',
+        language,
+        seniorName: 'فاطمة'
+      });
+
+      const promptMsg = `${exercise.encouragement}\n\n${exercise.question}`;
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const updated = [
+        ...messages,
+        { sender: 'wanis' as const, text: promptMsg, time: timeStr }
+      ];
+      setMessages(updated);
+
+      if (voiceEnabled) {
+        speakText(promptMsg, language);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+      setIsExercising(false);
+    }
+  };
 
   const handleSendMessage = async (customText?: string) => {
     const text = (customText || inputText).trim();
@@ -151,8 +183,17 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
         )}
       </div>
 
-      {/* Quick Topic Chips */}
+      {/* Quick Topic Chips & Cognitive Exercise Button */}
       <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 overflow-x-auto scrollbar-none">
+        <button
+          type="button"
+          onClick={handleStartCognitiveExercise}
+          disabled={isLoading || isExercising}
+          className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold flex items-center gap-1.5 shrink-0 shadow-xs hover:opacity-95 transition-all disabled:opacity-50 active:scale-95"
+        >
+          <BrainCircuit className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'جلسة تنشيط الذاكرة والحديث' : 'Memory Stimulation Session'}</span>
+        </button>
         {quickTopics.map((topic, i) => (
           <button
             key={i}

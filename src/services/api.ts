@@ -150,6 +150,127 @@ export async function sendCompanionChat(params: {
   }
 }
 
+// Clinical Geriatric Copilot & Deprescribing AI
+export interface ClinicalCopilotResponse {
+  reply: string;
+  suggestedActions?: string[];
+  evidenceBasis?: string;
+}
+
+export async function queryClinicalCopilot(params: {
+  query: string;
+  patientContext?: any;
+  medications?: any[];
+  acbScore?: number;
+  language?: SupportedLanguage;
+}): Promise<ClinicalCopilotResponse> {
+  try {
+    const res = await fetch('/api/gemini/clinical-copilot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Clinical Copilot API offline fallback:', err);
+    return {
+      reply: params.language === 'ar'
+        ? `بناءً على المعايير السريرية ومؤشر ACB البالغ (${params.acbScore || 4})، يُنصح بالبدء في خطة تخفيض تدريجي لعقار Amitriptyline وملاحظة تحسن الاستجابة المعرفية ونوعية النوم خلال 14 يوماً.`
+        : `Based on Beers Criteria and the patient's current ACB of ${params.acbScore || 4}, prioritize gradual deprescribing of Amitriptyline while monitoring cognitive latency and daytime alertness.`,
+      suggestedActions: [
+        'Taper Amitriptyline by 50% over 7 days',
+        'Switch Chlorpheniramine to Cetirizine (ACB = 0)',
+        'Schedule follow-up cognitive status review in 14 days'
+      ],
+      evidenceBasis: 'Beers Criteria 2023 / Boustani ACB Scale'
+    };
+  }
+}
+
+// Family Care Circle Advisor AI
+export interface FamilyAdvisorResponse {
+  summary: string;
+  caregiverTips: string[];
+  connectionPrompt: string;
+  wellnessFocus?: string;
+}
+
+export async function fetchFamilyAdvisorInsights(params: {
+  seniorProfile?: any;
+  recentCheckins?: any[];
+  totalAcbScore?: number;
+  language?: SupportedLanguage;
+}): Promise<FamilyAdvisorResponse> {
+  try {
+    const res = await fetch('/api/gemini/family-advisor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Family advisor API fallback:', err);
+    return {
+      summary: params.language === 'ar'
+        ? 'الوالدة مستقرة في مجمل مؤشراتها الحيوية، مع ملاحظة بطء طفيف في الحركة الصباحية مرتبط بموعد الدواء المسائي.'
+        : 'Mother is generally steady with slight morning fatigue correlated with evening medication timing.',
+      caregiverTips: params.language === 'ar'
+        ? [
+            'احرصوا على تشجيعها على شرب كوبين من الماء الدافئ صباحاً.',
+            'تجنبوا الحديث عن الأمور المقلقة قبل موعد النوم.',
+            'شاركوا معها صور العائلة وأحفادها لإدخال البهجة على قلبها.'
+          ]
+        : [
+            'Encourage warm hydration in the morning.',
+            'Keep evening conversations calm and uplifting.',
+            'Share family photos to stimulate joyful memory.'
+          ],
+      connectionPrompt: params.language === 'ar'
+        ? 'ما رأيك يا أمي أن نتمشى سوياً في الحديقة بعد صلاة العصر؟'
+        : 'How about a gentle afternoon walk together after tea?',
+      wellnessFocus: 'Sleep & Hydration'
+    };
+  }
+}
+
+// Cognitive Memory & Nostalgic Dialogue Exercise
+export interface CognitiveExerciseResponse {
+  question: string;
+  encouragement: string;
+  hints: string[];
+}
+
+export async function fetchCognitiveExercise(params: {
+  topicType?: 'nostalgia' | 'proverbs' | 'sensory_memories' | 'gratitude';
+  language?: SupportedLanguage;
+  seniorName?: string;
+}): Promise<CognitiveExerciseResponse> {
+  try {
+    const res = await fetch('/api/gemini/cognitive-exercise', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Cognitive exercise API fallback:', err);
+    return {
+      question: params.language === 'ar'
+        ? 'يا والدتي الحبيبة، هل تذكرين كيف كنتم تستقبلون صباح العيد في بيت الوالد قديماً؟'
+        : 'Dear mother, do you remember how family mornings felt during holidays when you were young?',
+      encouragement: params.language === "ar"
+        ? 'استرجاع الذكريات الطيبة ينير القلب وينشط الذهن.'
+        : 'Recalling warm memories brightens the mind and soul.',
+      hints: params.language === 'ar'
+        ? ['رائحة البخور والقهوة', 'ثياب العيد الجديدة', 'اجتماع الأهل والجيران']
+        : ['The scent of coffee and spices', 'Holiday gatherings', 'Neighbors visiting']
+    };
+  }
+}
+
 // Browser Web Speech API Utility for voice interaction
 export function speakText(text: string, language: SupportedLanguage = 'ar') {
   if (!('speechSynthesis' in window)) return;

@@ -32,6 +32,7 @@ import {
 import { DICTIONARY } from '../../data/i18n';
 import { DoctorBriefModal } from './DoctorBriefModal';
 import { AppointmentHealthSummaryModal } from './AppointmentHealthSummaryModal';
+import { ClinicalGeminiCopilot } from './ClinicalGeminiCopilot';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 
 interface ClinicianViewProps {
@@ -64,7 +65,7 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
   const t = DICTIONARY[language];
   const [isBriefModalOpen, setIsBriefModalOpen] = useState(false);
   const [isHealthSummaryOpen, setIsHealthSummaryOpen] = useState(false);
-  const [activeClinicianTab, setActiveClinicianTab] = useState<'brief' | 'acb' | 'soap'>('brief');
+  const [activeClinicianTab, setActiveClinicianTab] = useState<'brief' | 'acb' | 'soap' | 'copilot'>('brief');
 
   // Interactive Drug Simulation
   const [simulatedDrugName, setSimulatedDrugName] = useState('');
@@ -162,7 +163,7 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full max-w-2xl overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full max-w-3xl overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveClinicianTab('brief')}
           className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeClinicianTab === 'brief' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
@@ -174,6 +175,13 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
           className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeClinicianTab === 'acb' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           ACB 2.0 Risk Engine ({totalAcbScore})
+        </button>
+        <button
+          onClick={() => setActiveClinicianTab('copilot')}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap flex items-center justify-center gap-1.5 ${activeClinicianTab === 'copilot' ? 'bg-teal-600 text-white shadow-xs' : 'text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950/40'}`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>AI Clinical Copilot</span>
         </button>
         <button
           onClick={() => setActiveClinicianTab('soap')}
@@ -477,6 +485,16 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 4: GEMINI CLINICAL COPILOT & DEPRESCRIBING INTELLIGENCE */}
+      {activeClinicianTab === 'copilot' && (
+        <ClinicalGeminiCopilot
+          senior={senior}
+          medications={medications}
+          totalAcbScore={totalAcbScore}
+          language={language}
+        />
       )}
 
       {/* Doctor Brief Modal */}

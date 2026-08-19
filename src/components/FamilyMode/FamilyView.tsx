@@ -41,6 +41,7 @@ import { DailyWellnessSummaryModal } from './DailyWellnessSummaryModal';
 import { DailyWellnessSummaryCard } from './DailyWellnessSummaryCard';
 import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
 import { RecentAlertsHistorySection } from './RecentAlertsHistorySection';
+import { FamilyGeminiAdvisorCard } from './FamilyGeminiAdvisorCard';
 import { WaneesLogo } from '../WaneesLogo';
 
 interface FamilyViewProps {
@@ -286,6 +287,14 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         totalAcbScore={totalAcbScore}
         onOpenDoctorBrief={onOpenDoctorBrief}
         onNavigateToMode={onNavigateToMode}
+      />
+
+      {/* 3. Gemini 3.7 Family Care Circle Advisor Card */}
+      <FamilyGeminiAdvisorCard
+        senior={senior}
+        checkins={checkins}
+        totalAcbScore={totalAcbScore}
+        language={language}
       />
 
       {/* Sub Tabs */}

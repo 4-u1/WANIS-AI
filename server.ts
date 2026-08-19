@@ -529,6 +529,204 @@ Senior's message: "${message}"`;
   }
 });
 
+// Endpoint 6: Clinical Geriatric Copilot & Deprescribing Advisor (Clinician Mode)
+app.post("/api/gemini/clinical-copilot", async (req, res) => {
+  const { query, patientContext, medications, acbScore, language = "en" } = req.body;
+  const ai = getGeminiClient();
+
+  if (!ai) {
+    return res.json({
+      reply: language === "ar"
+        ? "مساعد الذكاء السريري غير متصل حالياً. بناءً على مؤشر ACB الحالي (" + (acbScore || 0) + ")، يُوصى بمراجعة الأدوية ذات التأثير الكوليني المرتفع والتدرج في خفض الجرعات."
+        : "Clinical Copilot is operating in offline mode. For a patient with ACB score of " + (acbScore || 0) + ", consider evaluating deprescribing high-anticholinergic agents like first-generation antihistamines or tricyclic antidepressants.",
+      suggestedActions: [
+        "Review Amitriptyline dosage and consider tapering",
+        "Switch first-gen antihistamines to Cetirizine (ACB = 0)",
+        "Schedule 2-week follow-up cognitive screening"
+      ]
+    });
+  }
+
+  try {
+    const prompt = `You are the WanisAI Clinical Geriatric Copilot & Deprescribing Intelligence Assistant.
+
+You assist licensed geriatricians, clinical pharmacists, and primary care physicians in evaluating senior cognitive health, Anticholinergic Cognitive Burden (ACB), fall risk, and medication reconciliation.
+
+Patient Clinical Context:
+${JSON.stringify(patientContext || { name: "Fatima Al-Hashemi", age: 76, baselineTriage: "YELLOW" })}
+
+Current Active Regimen:
+${JSON.stringify(medications || [])}
+
+Cumulative ACB Score: ${acbScore ?? 4}
+Language: ${language}
+
+Clinician Query: "${query}"
+
+Guidelines:
+1. Provide evidence-based clinical reasoning referencing ACB scales (Boustani 2008, CRISTAL), Beers Criteria, or STOPP/START criteria where relevant.
+2. If discussing deprescribing, propose safe, gradual tapering protocols and safer zero-ACB / low-ACB pharmacological or non-pharmacological alternatives.
+3. Keep the tone professional, concise, structured, and clinically actionable.
+4. Conclude with 2-3 specific suggested action items for the electronic health record (EHR).
+
+Respond in JSON format:
+{
+  "reply": "Comprehensive structured clinical response formatted with markdown headings and bullet points",
+  "suggestedActions": ["Action item 1", "Action item 2", "Action item 3"],
+  "evidenceBasis": "e.g. Beers Criteria 2023 / ACB Scale"
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.2
+      }
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    return res.json(parsed);
+  } catch (error: any) {
+    console.warn("Clinical copilot API error:", error?.message || error);
+    return res.json({
+      reply: "Based on clinical guidelines for a patient with ACB = " + (acbScore || 4) + ", prioritize tapering high-burden sedative or anticholinergic medications to minimize delirium and orthostatic fall risks.",
+      suggestedActions: ["Verify medication reconciliation", "Order baseline cognitive evaluation"]
+    });
+  }
+});
+
+// Endpoint 7: Family Care Circle AI Advisor & Insights
+app.post("/api/gemini/family-advisor", async (req, res) => {
+  const { seniorProfile, recentCheckins, totalAcbScore, language = "ar" } = req.body;
+  const ai = getGeminiClient();
+
+  if (!ai) {
+    return res.json({
+      summary: language === "ar"
+        ? "ملخص العافية: الوالدة مستقرة عموماً مع ملاحظة تقلب طفيف في نوم الصباح. يُنصح بمرافقتها في نزهة قصيرة والتأكد من شرب السوائل الكافية."
+        : "Family Digest: Mother is generally stable with mild morning drowsiness noted. Consider a short walk together and encouraging adequate hydration.",
+      caregiverTips: language === "ar"
+        ? [
+            "تأكدوا من توفير إضاءة خافتة ليلاً في الممر لتفادي التعثر.",
+            "احرصوا على التحدث معها بمودة وسؤالها عن ذكريات الطفولة لتنشيط الذاكرة.",
+            "تأكدوا من تناول دواء الضغط صباحاً مع كوب ماء ممتلئ."
+          ]
+        : [
+            "Ensure hallway nightlights are on to prevent nighttime stumbling.",
+            "Engage in warm reminiscing conversations about family memories.",
+            "Confirm morning medications are taken with plenty of water."
+          ],
+      connectionPrompt: language === "ar"
+        ? "اتصل بالوالدة واسألها: 'كيف كانت قهوة الصباح اليوم يا أمي؟'"
+        : "Call mother and ask: 'How was your morning coffee today, Mom?'"
+    });
+  }
+
+  try {
+    const prompt = `You are the WanisAI Family Care Circle Advisor.
+Your purpose is to empower adult children, caregivers, and family members with compassionate, culturally respectful, and actionable guidance to support their aging parent.
+
+Context:
+- Senior: ${JSON.stringify(seniorProfile || { name: "فاطمة الهاشمي", age: 76 })}
+- Recent Check-ins & Trends: ${JSON.stringify(recentCheckins || [])}
+- Anticholinergic Burden: ${totalAcbScore ?? 3}
+- Language: ${language}
+
+Generate empathetic, practical care insights.
+Rules:
+- Never alarm the family unnecessarily; maintain reassurance while pointing out gentle observations.
+- Include warm cultural expressions for Arabic responses.
+- Provide a specific conversation starter the family can use when calling or visiting.
+
+Respond in JSON:
+{
+  "summary": "1-2 sentence warm overview of how the parent has been doing lately",
+  "caregiverTips": ["Practical tip 1", "Practical tip 2", "Practical tip 3"],
+  "connectionPrompt": "A heartwarming question or greeting for family to ask the parent",
+  "wellnessFocus": "Hydration" | "Sleep" | "Cognitive Stimulation" | "Social Connection" | "Medication Schedule"
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.3
+      }
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    return res.json(parsed);
+  } catch (error: any) {
+    console.warn("Family advisor API error:", error?.message || error);
+    return res.json({
+      summary: language === "ar" ? "صحة الوالدة مستقرة، وتواصلكم اليومي يمنحها راحة نفسية عميقة." : "Mother's health is steady, and your daily check-in brings her immense comfort.",
+      caregiverTips: language === "ar" ? ["الحرص على أخذ قسط كافٍ من النوم", "شرب كميات وافرة من الماء"] : ["Ensure restful sleep", "Maintain good hydration"],
+      connectionPrompt: language === "ar" ? "كيف حالك يا ست الحبايب اليوم؟" : "How are you feeling today, Mom?",
+      wellnessFocus: "Social Connection"
+    });
+  }
+});
+
+// Endpoint 8: Cognitive Stimulation & Nostalgic Dialogue (Senior Mode)
+app.post("/api/gemini/cognitive-exercise", async (req, res) => {
+  const { topicType = "nostalgia", language = "ar", seniorName = "فاطمة" } = req.body;
+  const ai = getGeminiClient();
+
+  if (!ai) {
+    return res.json({
+      question: language === "ar"
+        ? "يا والدتي العزيزة، هل تذكرين ما هو أول طبق كنتِ تحبين إعداده في بيت العائلة في الأعياد؟"
+        : "Dear mother, do you remember the first traditional recipe you loved preparing for family holidays?",
+      encouragement: language === "ar"
+        ? "تذكر القصص القديمة ينعش القلب والذاكرة."
+        : "Recalling fond memories keeps the heart and mind vibrant.",
+      hints: language === "ar" ? ["المعمول بالتمر", "الكبسة أو المندي", "قهوة الهيل والزعفران"] : ["Holiday pastries", "Traditional roasted dish", "Cardamom tea/coffee"]
+    });
+  }
+
+  try {
+    const prompt = `You are Wanis (ونيس), conducting a gentle, therapeutic cognitive stimulation session for a senior named ${seniorName}.
+
+Topic Type: ${topicType} (options: 'nostalgia', 'proverbs', 'sensory_memories', 'gratitude')
+Language: ${language}
+
+Create a warm, culturally resonant question that stimulates long-term autobiographical memory, pleasant reminiscing, and verbal expression.
+
+Rules:
+- Respectful honorifics: "يا والدتي" / "والدي" in Arabic.
+- The question should feel like a cozy, dignified conversation with a caring family member, not a clinical quiz.
+- Provide 3 conversational cues/hints to gently spark memory if needed.
+
+Respond in JSON:
+{
+  "question": "Warm question to ask the senior",
+  "encouragement": "A gentle introductory or concluding sentiment",
+  "hints": ["Hint or memory prompt 1", "Hint 2", "Hint 3"]
+}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.7-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.5
+      }
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    return res.json(parsed);
+  } catch (error: any) {
+    console.warn("Cognitive exercise API error:", error?.message || error);
+    return res.json({
+      question: language === "ar" ? "ما هي أجمل ذكرياتكِ في بيتكِ القديم يا أمي؟" : "What is one of your sweetest memories from your childhood home?",
+      encouragement: language === "ar" ? "الحديث عن الذكريات الجميلة يجدد النشاط والهمة." : "Sharing beautiful memories brings light to the day.",
+      hints: ["الجيران والأهل", "ألعاب الطفولة", "أيام المطر والربيع"]
+    });
+  }
+});
+
 // Vite middleware for development or static serving for production
 async function start() {
   if (process.env.NODE_ENV !== "production") {

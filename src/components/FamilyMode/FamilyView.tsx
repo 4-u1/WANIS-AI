@@ -23,7 +23,9 @@ import {
   Info,
   Bell,
   Radio,
-  Calendar
+  Calendar,
+  Brain,
+  UserCheck
 } from 'lucide-react';
 import { 
   SeniorProfile, 
@@ -46,6 +48,11 @@ import { FamilyGeminiAdvisorCard } from './FamilyGeminiAdvisorCard';
 import { MedicationCloudSyncIndicator } from '../Notifications/MedicationCloudSyncIndicator';
 import { MedicationAdherenceChart } from './MedicationAdherenceChart';
 import { MedicationAdherenceSummaryCards } from './MedicationAdherenceSummaryCards';
+import { CognitiveTrendInsights } from './CognitiveTrendInsights';
+import { CaregiverActionItems } from './CaregiverActionItems';
+import { CareCircleMembersList } from './CareCircleMembersList';
+import { CareCircleForceGraph } from './CareCircleForceGraph';
+import { FamilyWeeklySummaryWidget } from './FamilyWeeklySummaryWidget';
 import { WaneesLogo } from '../WaneesLogo';
 
 interface FamilyViewProps {
@@ -125,7 +132,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
     }
   };
 
-  const [activeSubTab, setActiveSubTab] = useState<'timeline' | 'alerts' | 'adherence' | 'trends' | 'circle'>('timeline');
+  const [activeSubTab, setActiveSubTab] = useState<'actions' | 'timeline' | 'alerts' | 'adherence' | 'cognitive-trends' | 'trends' | 'circle'>('timeline');
   const [adherenceTimeRange, setAdherenceTimeRange] = useState<'30' | '14' | '7'>('30');
   const [quickNote, setQuickNote] = useState('');
   const [notesList, setNotesList] = useState<Array<{ author: string; text: string; time: string }>>([
@@ -155,7 +162,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
 
     const sleepDelta = Number((latest.sleepHours - first.sleepHours).toFixed(1));
     const sleepPercent = Math.round(((latest.sleepHours - first.sleepHours) / first.sleepHours) * 100);
-    const isSleepDeclining = sleepDelta < -0.4;
+    const isSleepDeclining = sleepDelta < -0.5;
 
     const socialDelta = Number((latest.socialEngagementScore - first.socialEngagementScore).toFixed(1));
     const socialPercent = Math.round(((latest.socialEngagementScore - first.socialEngagementScore) / first.socialEngagementScore) * 100);
@@ -211,6 +218,15 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
       holisticNarrative
     };
   }, [longitudinalData, language, totalAcbScore]);
+
+  // Live count of pending caregiver action items
+  const pendingActionsCount = useMemo(() => {
+    let count = 0;
+    count += medications.filter(m => !m.isTakenToday && !m.isSkippedToday).length;
+    count += careLoopEvents.filter(e => e.requiresHumanReview && !e.isOverridden).length;
+    if (totalAcbScore >= 3) count += 1;
+    return count;
+  }, [medications, careLoopEvents, totalAcbScore]);
 
   return (
     <div id="family-portal-container" className="space-y-6 animate-fadeIn">
@@ -271,6 +287,17 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </div>
       </div>
 
+      {/* Top 7-Day Care & Wellbeing Weekly Summary Widget */}
+      <FamilyWeeklySummaryWidget
+        longitudinalData={longitudinalData}
+        triageNotifications={triageNotifications}
+        medications={medications}
+        language={language}
+        onNavigateToAdherence={() => setActiveSubTab('adherence')}
+        onNavigateToAlerts={() => setActiveSubTab('alerts')}
+        onNavigateToTrends={() => setActiveSubTab('cognitive-trends')}
+      />
+
       {/* 1. Daily Wellness Summary (Check-in Notes + Medication Adherence Aggregation) */}
       <DailyWellnessSummaryCard
         senior={senior}
@@ -304,7 +331,28 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
       />
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-3xl overflow-x-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-4xl overflow-x-auto">
+        <button
+          id="btn-subtab-caregiver-actions"
+          onClick={() => setActiveSubTab('actions')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
+            activeSubTab === 'actions'
+              ? 'bg-amber-400 dark:bg-amber-400 text-amber-950 shadow-xs font-black'
+              : 'text-slate-600 dark:text-slate-400'
+          }`}
+        >
+          <UserCheck className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'مهام الرعاية والتأكيد' : 'Action Items'}</span>
+          {pendingActionsCount > 0 && (
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+              activeSubTab === 'actions' 
+                ? 'bg-amber-950 text-amber-100' 
+                : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+            }`}>
+              {pendingActionsCount}
+            </span>
+          )}
+        </button>
         <button
           onClick={() => setActiveSubTab('timeline')}
           className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'timeline' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
@@ -340,6 +388,14 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
           </span>
         </button>
         <button
+          id="btn-subtab-cognitive-trends"
+          onClick={() => setActiveSubTab('cognitive-trends')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${activeSubTab === 'cognitive-trends' ? 'bg-teal-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+        >
+          <Brain className="w-3.5 h-3.5" />
+          <span>{language === 'ar' ? 'رؤى الاتجاه المعرفي (ACB)' : 'Cognitive Trend Insights'}</span>
+        </button>
+        <button
           onClick={() => setActiveSubTab('trends')}
           className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${activeSubTab === 'trends' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
         >
@@ -353,9 +409,40 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </button>
       </div>
 
+      {/* TAB 0: CAREGIVER ACTION ITEMS & CONFIRMATION QUEUE */}
+      {activeSubTab === 'actions' && (
+        <div className="space-y-6 animate-fadeIn">
+          <CaregiverActionItems
+            senior={senior}
+            medications={medications}
+            careLoopEvents={careLoopEvents}
+            triageNotifications={triageNotifications}
+            language={language}
+            totalAcbScore={totalAcbScore}
+            onToggleMedicationTaken={onToggleMedicationTaken}
+            onTriggerMedicationReminder={onTriggerMedicationReminder}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+        </div>
+      )}
+
       {/* TAB 1: TIMELINE & CARE LOOP */}
       {activeSubTab === 'timeline' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="space-y-6 animate-fadeIn">
+          {/* Prominent Action Items Banner if tasks pending */}
+          <CaregiverActionItems
+            senior={senior}
+            medications={medications}
+            careLoopEvents={careLoopEvents}
+            triageNotifications={triageNotifications}
+            language={language}
+            totalAcbScore={totalAcbScore}
+            onToggleMedicationTaken={onToggleMedicationTaken}
+            onTriggerMedicationReminder={onTriggerMedicationReminder}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Main 2-Columns: Today's Summary & 8-Stage Care Loop */}
           <div className="lg:col-span-2 space-y-6">
@@ -558,6 +645,7 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
           </div>
 
         </div>
+        </div>
       )}
 
       {/* TAB 2: RECENT ALERTS HISTORY & TRENDS */}
@@ -644,12 +732,71 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
             language={language}
             onOpenDoctorBrief={onOpenDoctorBrief}
           />
+
+          {/* Quick Nav Banner to Cognitive Trend Insights */}
+          <div 
+            id="banner-jump-to-cognitive-insights"
+            className="p-5 rounded-2xl bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-indigo-500/10 border border-teal-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <Brain className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  {language === 'ar' ? 'هل تريد ربط الالتزام الدوائي بتغيرات المزاج واليقظة؟' : 'Correlate Medication Burdens (ACB) with Mood Shifts?'}
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {language === 'ar' ? 'استكشف رسم بياني متقدم يوضح تأثير عبء الأدوية على حيوية الوالدة ونومها.' : 'Explore multi-variable Recharts visualization linking anticholinergic load to daily mood scores.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="btn-adherence-jump-cognitive-trends"
+              onClick={() => setActiveSubTab('cognitive-trends')}
+              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all self-start sm:self-center cursor-pointer shrink-0"
+            >
+              <span>{language === 'ar' ? 'عرض رؤى الاتجاه المعرفي' : 'View Cognitive Trend Insights'}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: COGNITIVE TREND INSIGHTS (RECHARTS CORRELATION) */}
+      {activeSubTab === 'cognitive-trends' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Small Summary Cards Above Chart */}
+          <MedicationAdherenceSummaryCards
+            medications={medications}
+            language={language}
+          />
+
+          {/* Dedicated Cognitive Trend Insights Section */}
+          <CognitiveTrendInsights
+            seniorName={senior.preferredName || senior.fullName}
+            longitudinalData={longitudinalData}
+            medications={medications}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
         </div>
       )}
 
       {/* TAB 4: 14-DAY TRENDS & CHARTS */}
       {activeSubTab === 'trends' && (
         <div className="space-y-6">
+          {/* Cognitive Trend Insights: ACB vs Mood correlation */}
+          <CognitiveTrendInsights
+            seniorName={senior.preferredName || senior.fullName}
+            longitudinalData={longitudinalData}
+            medications={medications}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+
           {/* Small Summary Cards Above Charts: Total Missed Doses & Current Month Adherence Rate */}
           <MedicationAdherenceSummaryCards
             medications={medications}
@@ -920,31 +1067,21 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
             onSimulateShift={onSimulateTriageShift}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {careCircle.map((member) => (
-              <div key={member.id} className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                <div className="flex items-center gap-3">
-                  <img src={member.avatar} alt={member.name} className="w-14 h-14 rounded-2xl object-cover" />
-                  <div>
-                    <h4 className="font-bold text-base text-slate-900 dark:text-white">{member.name}</h4>
-                    <span className="text-xs text-teal-600 dark:text-teal-400 font-semibold">{member.role}</span>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 space-y-1">
-                  <p>Phone: {member.phone}</p>
-                  <p>Consent Tier: {member.consentTierGranted}</p>
-                  <p>Status: Active</p>
-                </div>
-                <a 
-                  href={`tel:${member.phone}`}
-                  className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center justify-center gap-2"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>Call {member.relation}</span>
-                </a>
-              </div>
-            ))}
-          </div>
+          {/* D3.js Force-Directed Graph: Care Circle Topology & Relationship Strengths */}
+          <CareCircleForceGraph
+            senior={senior}
+            careCircle={careCircle}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
+
+          {/* Interactive Care Circle Member Cards with Contact Status & Quick Initiation */}
+          <CareCircleMembersList
+            careCircle={careCircle}
+            seniorName={senior.preferredName || senior.fullName}
+            language={language}
+            onOpenDoctorBrief={onOpenDoctorBrief}
+          />
 
           {/* Longitudinal Recent Alerts History */}
           <RecentAlertsHistorySection

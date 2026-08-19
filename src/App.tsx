@@ -624,6 +624,7 @@ export default function App() {
             senior={senior}
             latestCheckIn={checkins[0]}
             medications={medications}
+            careCircle={MOCK_CARE_CIRCLE}
             onOpenCheckinModal={() => setIsCheckinModalOpen(true)}
             onToggleMedicationTaken={handleToggleMedicationTaken}
             onNavigateToMode={setCurrentMode}

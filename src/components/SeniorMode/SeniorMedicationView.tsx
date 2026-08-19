@@ -1,14 +1,16 @@
 import React from 'react';
-import { Pill, Check, Clock, AlertTriangle, ShieldCheck, Info, Bell, BellRing, Volume2, Sparkles, Send } from 'lucide-react';
-import { Medication, SupportedLanguage } from '../../types';
+import { Pill, Check, Clock, AlertTriangle, ShieldCheck, Info, Bell, BellRing, Volume2, Sparkles, Send, CloudCheck } from 'lucide-react';
+import { Medication, SupportedLanguage, CareCircleMember } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { notificationAudio } from '../../services/notificationService';
+import { MedicationCloudSyncIndicator } from '../Notifications/MedicationCloudSyncIndicator';
 
 interface SeniorMedicationViewProps {
   medications: Medication[];
   onToggleTaken: (id: string) => void;
   language: SupportedLanguage;
   totalAcbScore: number;
+  careCircle?: CareCircleMember[];
   onTriggerReminderToast?: (med: Medication) => void;
   onOpenReminderModal?: () => void;
 }
@@ -18,6 +20,7 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
   onToggleTaken,
   language,
   totalAcbScore,
+  careCircle = [],
   onTriggerReminderToast,
   onOpenReminderModal
 }) => {
@@ -79,6 +82,14 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Real-time Cloud Sync & Multi-Device Care Circle Telemetry Indicator */}
+      <MedicationCloudSyncIndicator
+        medications={safeMedications}
+        careCircle={careCircle}
+        language={language}
+        onToggleMedicationTaken={onToggleTaken}
+      />
 
       {/* Smart Medication Reminder & Push Notification Hub Banner */}
       <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-emerald-950 rounded-3xl p-5 sm:p-6 text-white border border-teal-500/30 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -233,16 +244,22 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
               </div>
 
               {med.lastTaken && (
-                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                    <Clock className="w-3 h-3 text-slate-400" />
                     {language === 'ar' ? 'آخر جرعة:' : 'Last dose:'} {med.lastTaken}
                   </span>
                   {med.isTakenToday && (
-                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      {language === 'ar' ? 'تم تناولها' : 'Taken'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 font-bold px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                        <CloudCheck className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                        <span>{language === 'ar' ? 'متزامن مع العائلة' : 'Synced'}</span>
+                      </span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        {language === 'ar' ? 'تم تناولها' : 'Taken'}
+                      </span>
+                    </div>
                   )}
                 </div>
               )}

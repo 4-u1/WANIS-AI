@@ -33,6 +33,9 @@ export interface Medication {
   skippedReason?: string;
   imageUrl?: string;
   notes?: string;
+  syncedBy?: string;
+  syncSourceDevice?: string;
+  confirmedByCaregiver?: string;
 }
 
 export interface MedicationIntakeRecord {
@@ -214,6 +217,86 @@ export interface RufqaPilgrimState {
     text: string;
     phonetic?: string;
   }[];
+  liveTelemetry?: RufqaLiveTelemetry;
+  safetyZones?: RufqaSafetyZone[];
+  proximityAlerts?: RufqaProximityAlert[];
+}
+
+export type SafetyZoneType = 'SAFE_GREEN' | 'CAUTION_YELLOW' | 'DANGER_RED' | 'MEETING_POINT';
+
+export interface RufqaSafetyZone {
+  id: string;
+  name: string;
+  nameAr: string;
+  type: SafetyZoneType;
+  radiusMeters: number;
+  centerCoordinates: { lat: number; lng: number };
+  description: string;
+  descriptionAr: string;
+  isInside: boolean;
+  color: string;
+  iconName: string;
+}
+
+export interface RufqaProximityAlert {
+  id: string;
+  timestamp: string;
+  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  title: string;
+  titleAr: string;
+  message: string;
+  messageAr: string;
+  targetCaregivers: string[];
+  distanceFromSafeZoneMeters: number;
+  suggestedAction: string;
+  suggestedActionAr: string;
+  isAcknowledged: boolean;
+}
+
+export interface RufqaLiveTelemetry {
+  currentLat: number;
+  currentLng: number;
+  accuracyRadiusMeters: number;
+  altitudeMeters: number;
+  speedKmh: number;
+  headingDegrees: number;
+  lastUpdated: string;
+  activeRitualStage: 'TAWAF' | 'SAI' | 'MINA_REST' | 'ARAFAT_DUA' | 'MUZDALIFAH' | 'HOTEL_REST';
+  batteryPercent: number;
+  signalStrength: 'EXCELLENT' | 'GOOD' | 'CONGESTED_MESH' | 'OFFLINE_RECONNECTING';
+  distanceToMeetingPointMeters: number;
+  distanceToLeaderMeters: number;
+  distanceToHotelMeters: number;
+  currentZoneId: string;
+  activeProximityStatus: 'WITHIN_SAFE_PERIMETER' | 'APPROACHING_BOUNDARY' | 'OUTSIDE_SAFETY_ZONE';
+  breadcrumbTrail?: { lat: number; lng: number; timestamp: string; label?: string }[];
+}
+
+export type RitualIntensityLevel = 'LOW_REST' | 'MODERATE_PACED' | 'HIGH_EXERTION' | 'EXTREME_CAUTION';
+
+export interface RitualHealthTip {
+  id: string;
+  ritualStage: 'TAWAF' | 'SAI' | 'MINA_REST' | 'ARAFAT_DUA' | 'MUZDALIFAH' | 'JAMARAT' | 'HOTEL_REST';
+  title: string;
+  titleAr: string;
+  locationName: string;
+  locationNameAr: string;
+  intensity: RitualIntensityLevel;
+  ambientTempC: number;
+  hydrationTargetMlPerHour: number;
+  hydrationGuidelines: string[];
+  hydrationGuidelinesAr: string[];
+  restIntervalMinutes: number;
+  restGuidelines: string[];
+  restGuidelinesAr: string[];
+  clinicalPrecaution: string;
+  clinicalPrecautionAr: string;
+  seniorConcession: string;
+  seniorConcessionAr: string;
+  audioVoiceGuidance: string;
+  audioVoiceGuidanceAr: string;
+  emergencySignToWatch: string;
+  emergencySignToWatchAr: string;
 }
 
 export interface CareLoopEvent {
@@ -430,4 +513,36 @@ export interface EmergencyCardData {
   shareTokens: EmergencyShareToken[];
   accessAuditLogs: EmergencyAccessLog[];
 }
+
+export interface CareCircleDeviceSync {
+  memberId: string;
+  memberName: string;
+  memberRole: string;
+  relation: string;
+  avatar: string;
+  deviceModel: string;
+  deviceType: 'mobile' | 'tablet' | 'desktop' | 'watch';
+  os: string;
+  syncStatus: 'SYNCED' | 'SYNCING' | 'PENDING' | 'OFFLINE';
+  lastSyncTime: string;
+  lastActionSummary: string;
+  batteryLevel?: number;
+  networkType?: string;
+  isOnline: boolean;
+  latencyMs: number;
+}
+
+export interface MedicationSyncAuditLog {
+  id: string;
+  timestamp: string;
+  medicationId: string;
+  medicationName: string;
+  action: 'DOSE_CONFIRMED' | 'DOSE_SKIPPED' | 'REMINDER_SENT' | 'SCHEDULE_SYNCED' | 'BULK_UPDATE';
+  performedBy: string;
+  deviceId: string;
+  deviceType: string;
+  syncLatencyMs: number;
+  encryptionProtocol: string;
+}
+
 

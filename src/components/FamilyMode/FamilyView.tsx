@@ -42,6 +42,7 @@ import { DailyWellnessSummaryCard } from './DailyWellnessSummaryCard';
 import { CareCircleAlertsPanel } from './CareCircleAlertsPanel';
 import { RecentAlertsHistorySection } from './RecentAlertsHistorySection';
 import { FamilyGeminiAdvisorCard } from './FamilyGeminiAdvisorCard';
+import { MedicationCloudSyncIndicator } from '../Notifications/MedicationCloudSyncIndicator';
 import { WaneesLogo } from '../WaneesLogo';
 
 interface FamilyViewProps {
@@ -793,6 +794,14 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
       {/* TAB 3: CARE CIRCLE */}
       {activeSubTab === 'circle' && (
         <div className="space-y-6">
+          {/* Multi-Device Cloud Sync Telemetry Bar */}
+          <MedicationCloudSyncIndicator
+            medications={medications}
+            careCircle={careCircle}
+            language={language}
+            onToggleMedicationTaken={onToggleMedicationTaken}
+          />
+
           {/* Automated Protocol & Notification History Panel */}
           <CareCircleAlertsPanel
             notifications={triageNotifications}

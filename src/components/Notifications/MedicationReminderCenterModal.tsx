@@ -50,6 +50,7 @@ import {
   speakMedicationReminder,
   speakMedicationHistoryRecord
 } from '../../services/notificationService';
+import { MedicationCloudSyncIndicator } from './MedicationCloudSyncIndicator';
 import { WaneesLogo } from '../WaneesLogo';
 
 interface MedicationReminderCenterModalProps {
@@ -579,6 +580,14 @@ export const MedicationReminderCenterModal: React.FC<MedicationReminderCenterMod
                   </button>
                 )}
               </div>
+
+              {/* Cloud Sync & Family Care Circle Real-time Telemetry Indicator */}
+              <MedicationCloudSyncIndicator
+                medications={safeMedications}
+                language={language}
+                onToggleMedicationTaken={onToggleMedicationTaken}
+                onBulkUpdateMedications={onBulkUpdateMedications}
+              />
 
               {/* Browser Push & Sound Permissions Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

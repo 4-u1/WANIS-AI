@@ -22,6 +22,8 @@ import { RufqaPilgrimState, SupportedLanguage } from '../../types';
 import { fetchRufqaAssist, speakText } from '../../services/api';
 import { DICTIONARY } from '../../data/i18n';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
+import { RufqaGeolocationMap } from './RufqaGeolocationMap';
+import { RufqaRitualHealthTips } from './RufqaRitualHealthTips';
 
 interface RufqaViewProps {
   rufqaState: RufqaPilgrimState;
@@ -167,6 +169,20 @@ export const RufqaView: React.FC<RufqaViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Real-time Geolocation Tracking, Safety Geofences & Proximity Radar */}
+      <RufqaGeolocationMap
+        rufqaState={rufqaState}
+        onUpdateRufqaState={onUpdateRufqaState}
+        language={language}
+        voiceEnabled={voiceEnabled}
+      />
+
+      {/* Ritual-Specific Health Tips, Hydration & Rest Recommendations */}
+      <RufqaRitualHealthTips
+        language={language}
+        voiceEnabled={voiceEnabled}
+      />
 
       {/* Grid: 1. Hotel & Meeting Points | 2. Multilingual Emergency Card */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

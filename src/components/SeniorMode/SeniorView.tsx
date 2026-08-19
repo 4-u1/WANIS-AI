@@ -17,7 +17,7 @@ import {
   Bell,
   HelpCircle
 } from 'lucide-react';
-import { SeniorProfile, CheckInRecord, Medication, SupportedLanguage, PersonaMode } from '../../types';
+import { SeniorProfile, CheckInRecord, Medication, SupportedLanguage, PersonaMode, CareCircleMember } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { SeniorVoiceAssistant } from './SeniorVoiceAssistant';
 import { SeniorMedicationView } from './SeniorMedicationView';
@@ -34,6 +34,7 @@ interface SeniorViewProps {
   language: SupportedLanguage;
   voiceEnabled: boolean;
   totalAcbScore: number;
+  careCircle?: CareCircleMember[];
   onOpenContextualHelp?: (topic: string) => void;
   onOpenEmergencyCard?: () => void;
   onTriggerReminderToast?: (med: Medication) => void;
@@ -50,6 +51,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   language,
   voiceEnabled,
   totalAcbScore,
+  careCircle = [],
   onOpenContextualHelp,
   onOpenEmergencyCard,
   onTriggerReminderToast,
@@ -369,6 +371,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
           onToggleTaken={onToggleMedicationTaken}
           language={language}
           totalAcbScore={totalAcbScore}
+          careCircle={careCircle}
           onTriggerReminderToast={onTriggerReminderToast}
           onOpenReminderModal={onOpenReminderModal}
         />

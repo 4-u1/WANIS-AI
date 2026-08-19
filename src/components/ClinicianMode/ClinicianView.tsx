@@ -16,17 +16,22 @@ import {
   Plus,
   Trash2,
   HelpCircle,
-  Play
+  Play,
+  FileCheck2,
+  ClipboardList
 } from 'lucide-react';
 import { 
   SeniorProfile, 
   Medication, 
   DoctorBriefData, 
   LongitudinalMetrics, 
-  SupportedLanguage 
+  SupportedLanguage,
+  CareCircleTriageNotification,
+  CheckInRecord
 } from '../../types';
 import { DICTIONARY } from '../../data/i18n';
 import { DoctorBriefModal } from './DoctorBriefModal';
+import { AppointmentHealthSummaryModal } from './AppointmentHealthSummaryModal';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 
 interface ClinicianViewProps {
@@ -34,6 +39,8 @@ interface ClinicianViewProps {
   medications: Medication[];
   doctorBrief: DoctorBriefData;
   longitudinalData: LongitudinalMetrics[];
+  triageHistory?: CareCircleTriageNotification[];
+  checkins?: CheckInRecord[];
   onUpdateMedications: (meds: Medication[]) => void;
   language: SupportedLanguage;
   totalAcbScore: number;
@@ -46,6 +53,8 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
   medications,
   doctorBrief,
   longitudinalData,
+  triageHistory = [],
+  checkins = [],
   onUpdateMedications,
   language,
   totalAcbScore,
@@ -54,6 +63,7 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
 }) => {
   const t = DICTIONARY[language];
   const [isBriefModalOpen, setIsBriefModalOpen] = useState(false);
+  const [isHealthSummaryOpen, setIsHealthSummaryOpen] = useState(false);
   const [activeClinicianTab, setActiveClinicianTab] = useState<'brief' | 'acb' | 'soap'>('brief');
 
   // Interactive Drug Simulation
@@ -116,49 +126,60 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap w-full lg:w-auto">
           {onStartDoctorBriefTour && (
             <button
               id="show-me-how-doctor-brief-btn"
               onClick={onStartDoctorBriefTour}
-              className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700"
+              className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
               title="Interactive Step-by-Step Walkthrough"
             >
-              <Play className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 fill-current" />
+              <Play className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 fill-current shrink-0" />
               <span>{language === 'ar' ? 'أرني كيف أستخدم الملخص' : 'Show Me How'}</span>
             </button>
           )}
 
+          {/* Generate Comprehensive Health Summary Button */}
+          <button
+            id="generate-health-summary-btn"
+            onClick={() => setIsHealthSummaryOpen(true)}
+            className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
+            title="Generate Comprehensive Appointment Health Summary"
+          >
+            <ClipboardList className="w-4 h-4 shrink-0" />
+            <span>{language === 'ar' ? 'إنشاء ملخص الموعد' : 'Generate Health Summary'}</span>
+          </button>
+
           <button
             id="open-full-doctor-brief-btn"
             onClick={() => setIsBriefModalOpen(true)}
-            className="px-5 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md shadow-teal-600/20 flex items-center gap-2 transition-transform active:scale-95"
+            className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
           >
-            <FileText className="w-4 h-4" />
-            <span>Launch Full Doctor Brief 2.0</span>
+            <FileText className="w-4 h-4 shrink-0" />
+            <span>{language === 'ar' ? 'عرض ملف الطبيب 2.0' : 'Launch Doctor Brief 2.0'}</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-lg">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full max-w-2xl overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveClinicianTab('brief')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeClinicianTab === 'brief' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeClinicianTab === 'brief' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           2-Min Clinical Summary
         </button>
         <button
           onClick={() => setActiveClinicianTab('acb')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeClinicianTab === 'acb' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeClinicianTab === 'acb' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           ACB 2.0 Risk Engine ({totalAcbScore})
         </button>
         <button
           onClick={() => setActiveClinicianTab('soap')}
-          className={`flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeClinicianTab === 'soap' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeClinicianTab === 'soap' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          SOAP & EHR Export
+          SOAP &amp; EHR Export
         </button>
       </div>
 
@@ -403,20 +424,38 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
 
       {/* TAB 3: SOAP NOTE & EHR EXPORT */}
       {activeClinicianTab === 'soap' && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-slate-900 dark:text-white">
-              Generated Geriatric SOAP Note (EHR Ready)
-            </h3>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(`SUBJECTIVE: 76yo female reports fragmented sleep (4.5h) and morning dizziness...\nOBJECTIVE: Baseline delta -18%, Cumulative ACB=4...\nASSESSMENT: High anticholinergic burden exacerbating cognitive latency...\nPLAN: Taper Amitriptyline, trial Cetirizine ACB=0...`);
-                alert('SOAP Note copied to clipboard for EHR insertion!');
-              }}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-xs font-bold"
-            >
-              Copy SOAP Note
-            </button>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                {language === 'ar' ? 'تقرير SOAP التوليدي المعتمد (جاهز للأنظمة الصحية)' : 'Generated Geriatric SOAP Note (EHR Ready)'}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {language === 'ar' ? 'تنسيق قياسي موثق للنسخ المباشر أو التصدير لملف المريض' : 'Standard clinical documentation formatted for direct EHR export'}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsHealthSummaryOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform active:scale-95"
+              >
+                <ClipboardList className="w-3.5 h-3.5" />
+                <span>{language === 'ar' ? 'ملخص الموعد الشامل' : 'Full Health Summary'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`SUBJECTIVE: 76yo female reports fragmented sleep (4.5h) and morning dizziness...\nOBJECTIVE: Baseline delta -18%, Cumulative ACB=4...\nASSESSMENT: High anticholinergic burden exacerbating cognitive latency...\nPLAN: Taper Amitriptyline, trial Cetirizine ACB=0...`);
+                  alert('SOAP Note copied to clipboard for EHR insertion!');
+                }}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700"
+              >
+                {language === 'ar' ? 'نسخ نص SOAP' : 'Copy SOAP Note'}
+              </button>
+            </div>
           </div>
 
           <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 font-mono text-xs text-slate-800 dark:text-slate-200 space-y-3 leading-relaxed">
@@ -440,11 +479,24 @@ export const ClinicianView: React.FC<ClinicianViewProps> = ({
         </div>
       )}
 
-      {/* Modal View */}
+      {/* Doctor Brief Modal */}
       <DoctorBriefModal
         isOpen={isBriefModalOpen}
         onClose={() => setIsBriefModalOpen(false)}
         brief={doctorBrief}
+        language={language}
+      />
+
+      {/* Appointment Health Summary Modal */}
+      <AppointmentHealthSummaryModal
+        isOpen={isHealthSummaryOpen}
+        onClose={() => setIsHealthSummaryOpen(false)}
+        senior={senior}
+        medications={medications}
+        triageHistory={triageHistory}
+        checkins={checkins}
+        doctorBrief={doctorBrief}
+        totalAcbScore={totalAcbScore}
         language={language}
       />
 

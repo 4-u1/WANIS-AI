@@ -47,6 +47,7 @@ import { WaneesProductIntroductionModal } from './components/Walkthrough/WaneesP
 import { MedicationToastNotification, ActiveMedicationReminder } from './components/Notifications/MedicationToastNotification';
 import { MedicationReminderCenterModal } from './components/Notifications/MedicationReminderCenterModal';
 import { CareCircleTriageToast } from './components/Notifications/CareCircleTriageToast';
+import { MobileBottomNav } from './components/MobileBottomNav';
 import { 
   notificationAudio, 
   speakMedicationReminder, 
@@ -481,6 +482,8 @@ export default function App() {
         return {
           ...m,
           isTakenToday: nextState,
+          isSkippedToday: false,
+          skippedReason: undefined,
           lastTaken: nextState ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined
         };
       }
@@ -506,6 +509,73 @@ export default function App() {
       };
       setCareLoopEvents(prev => [adherenceEvent, ...prev]);
     }
+  };
+
+  // Bulk Update Multiple Medications (Taken, Skipped, or Reset)
+  const handleBulkUpdateMedications = (
+    updates: { id: string; action: 'TAKE' | 'SKIP' | 'RESET'; note?: string; reason?: string }[]
+  ) => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const affectedIds = new Set(updates.map(u => u.id));
+
+    setMedications(prev => prev.map(m => {
+      const update = updates.find(u => u.id === m.id);
+      if (!update) return m;
+
+      if (update.action === 'TAKE') {
+        return {
+          ...m,
+          isTakenToday: true,
+          isSkippedToday: false,
+          skippedReason: undefined,
+          lastTaken: timeStr,
+          notes: update.note || m.notes
+        };
+      } else if (update.action === 'SKIP') {
+        return {
+          ...m,
+          isTakenToday: false,
+          isSkippedToday: true,
+          skippedReason: update.reason || 'Missed dosing block',
+          lastTaken: `Skipped (${timeStr})`,
+          notes: update.note || m.notes || 'Dose skipped by caregiver'
+        };
+      } else if (update.action === 'RESET') {
+        return {
+          ...m,
+          isTakenToday: false,
+          isSkippedToday: false,
+          skippedReason: undefined,
+          lastTaken: undefined
+        };
+      }
+      return m;
+    }));
+
+    // Clear active toasts for all updated medications
+    setActiveReminders(prev => prev.filter(r => !affectedIds.has(r.medication.id)));
+
+    // Play chime feedback
+    const hasTakeAction = updates.some(u => u.action === 'TAKE');
+    if (hasTakeAction) {
+      notificationAudio.playSuccessChime();
+    } else {
+      notificationAudio.playReminderChime();
+    }
+
+    const bulkEvent: CareLoopEvent = {
+      id: `evt-bulk-med-${Date.now()}`,
+      stage: 'ACT',
+      title: 'Bulk Medication History Updated',
+      description: `Caregiver updated ${updates.length} medication(s) simultaneously (Bulk Edit).`,
+      timestamp: timeStr,
+      triage: 'GREEN',
+      confidenceScore: 0.99,
+      actor: 'CAREGIVER',
+      consentTier: 'FAMILY_SUPPORT',
+      requiresHumanReview: false
+    };
+    setCareLoopEvents(prev => [bulkEvent, ...prev]);
   };
 
   // Trigger Simulated 8-Stage Cycle
@@ -547,7 +617,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main id="main-content-container" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main id="main-content-container" className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-24 md:pb-10">
         
         {currentMode === 'senior' && (
           <SeniorView
@@ -594,6 +664,8 @@ export default function App() {
             medications={medications}
             doctorBrief={doctorBrief}
             longitudinalData={MOCK_LONGITUDINAL_DATA}
+            triageHistory={triageNotificationHistory}
+            checkins={checkins}
             onUpdateMedications={setMedications}
             language={language}
             totalAcbScore={totalAcbScore}
@@ -678,6 +750,7 @@ export default function App() {
         onClose={() => setIsReminderModalOpen(false)}
         medications={medications}
         onToggleMedicationTaken={handleToggleMedicationTaken}
+        onBulkUpdateMedications={handleBulkUpdateMedications}
         onTriggerReminderToast={handleTriggerReminderToast}
         language={language}
         voiceEnabled={voiceEnabled}
@@ -754,8 +827,19 @@ export default function App() {
         language={language}
       />
 
+      {/* Mobile Bottom Navigation Dock (Phone Screens) */}
+      <MobileBottomNav
+        currentMode={currentMode}
+        onSelectMode={setCurrentMode}
+        language={language}
+        triageLevel={currentTriageLevel}
+        pendingMedicationsCount={pendingMedications.length}
+        onOpenReminderCenter={() => setIsReminderModalOpen(true)}
+        onTriggerEmergency={() => setIsEmergencyModalOpen(true)}
+      />
+
       {/* Minimalist Footnote */}
-      <footer className="border-t border-slate-200 dark:border-slate-800/80 py-4 text-center text-xs text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-900/50">
+      <footer className="border-t border-slate-200 dark:border-slate-800/80 py-4 text-center text-xs text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-900/50 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>WanisAI™ Cognitive Wellbeing Ecosystem • Clinically Responsible & Culturally Intelligent</span>
           <span className="text-[11px] text-slate-400">Non-Diagnostic Geriatric Decision Support System v2.4</span>

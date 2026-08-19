@@ -243,23 +243,23 @@ export const FamilyView: React.FC<FamilyViewProps> = ({
         </div>
 
         {/* Action CTAs: Daily Wellness Summary & Doctor Brief */}
-        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap relative z-10">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap w-full sm:w-auto relative z-10">
           <button
             id="family-open-daily-summary-btn"
             onClick={() => setIsDailySummaryOpen(true)}
-            className="px-4 py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-sm shadow-md shadow-amber-400/20 flex items-center gap-2 transition-transform active:scale-95"
+            className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm shadow-md shadow-amber-400/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
             title="Open Daily Wellness Summary"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 shrink-0" />
             <span>{language === 'ar' ? 'ملخص العافية اليومي' : 'Daily Wellness Summary'}</span>
           </button>
 
           <button
             id="family-open-doctor-brief-btn"
             onClick={onOpenDoctorBrief}
-            className="px-4 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md shadow-teal-600/20 flex items-center gap-2 transition-transform active:scale-95"
+            className="flex-1 sm:flex-none px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-teal-600/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
           >
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4 shrink-0" />
             <span>{t.doctorBrief}</span>
           </button>
         </div>

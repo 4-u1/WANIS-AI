@@ -29,7 +29,10 @@ export interface Medication {
   saferAlternatives: string[];
   lastTaken?: string;
   isTakenToday: boolean;
+  isSkippedToday?: boolean;
+  skippedReason?: string;
   imageUrl?: string;
+  notes?: string;
 }
 
 export interface MedicationIntakeRecord {
@@ -42,10 +45,12 @@ export interface MedicationIntakeRecord {
   timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'bedtime';
   acbScore: number;
   indication: string;
-  status: 'TAKEN_ON_TIME' | 'TAKEN_DELAYED' | 'SELF_REPORTED' | 'CONFIRMED_BY_CAREGIVER';
-  loggedVia: 'VOICE_CHECKIN' | 'IN_APP_TOAST' | 'MANUAL_MODAL' | 'SYSTEM_SCHEDULE';
+  status: 'TAKEN_ON_TIME' | 'TAKEN_DELAYED' | 'SELF_REPORTED' | 'CONFIRMED_BY_CAREGIVER' | 'SKIPPED';
+  loggedVia: 'VOICE_CHECKIN' | 'IN_APP_TOAST' | 'MANUAL_MODAL' | 'SYSTEM_SCHEDULE' | 'BULK_EDIT';
   imageUrl?: string;
   notes?: string;
+  isSkipped?: boolean;
+  skippedReason?: string;
 }
 
 export interface LongitudinalMetrics {

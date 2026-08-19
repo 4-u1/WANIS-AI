@@ -100,13 +100,13 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
           </div>
 
           {/* Big Accessible Check-in CTA Button */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               id="start-voice-checkin-hero-btn"
               onClick={onOpenCheckinModal}
-              className="px-6 py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-base sm:text-lg shadow-lg shadow-amber-400/30 flex items-center justify-center gap-3 transition-transform active:scale-95 group"
+              className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-base sm:text-lg shadow-lg shadow-amber-400/30 flex items-center justify-center gap-3 transition-transform active:scale-95 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-amber-950/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-amber-950/10 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                 <Mic className="w-6 h-6 text-amber-950" />
               </div>
               <span>{t.startCheckin}</span>
@@ -115,9 +115,9 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
             <button
               id="goto-rufqa-hero-btn"
               onClick={() => onNavigateToMode('rufqa')}
-              className="px-5 py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/20"
+              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/20"
             >
-              <Compass className="w-5 h-5 text-amber-300" />
+              <Compass className="w-5 h-5 text-amber-300 shrink-0" />
               <span>{language === 'ar' ? 'رفقة الحج والعمرة' : 'Rufqa Pilgrimage'}</span>
             </button>
           </div>
@@ -125,29 +125,29 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
       </section>
 
       {/* Sub-Navigation Tabs for Senior */}
-      <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl max-w-md">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:max-w-md overflow-x-auto scrollbar-none">
         <button
           id="senior-tab-overview"
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          {language === 'ar' ? 'الاطمئنان واليوميات' : 'Daily Wellbeing'}
+          {language === 'ar' ? 'اليوميات' : 'Daily Wellbeing'}
         </button>
 
         <button
           id="senior-tab-meds"
           onClick={() => setActiveTab('meds')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          {language === 'ar' ? 'أدويتي' : 'My Medications'}
+          {language === 'ar' ? 'أدويتي' : 'Medications'}
         </button>
 
         <button
           id="senior-tab-chat"
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
-          {language === 'ar' ? 'محادثة ونيس' : 'Chat with Wanis'}
+          {language === 'ar' ? 'محادثة ونيس' : 'Voice Chat'}
         </button>
       </div>
 

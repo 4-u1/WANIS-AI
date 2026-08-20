@@ -10,6 +10,7 @@ import {
   ConsentSetting,
   ConsentMatrix
 } from '../types';
+import { INITIAL_RUFQA_STEP_DATA } from './rufqaStepData';
 
 export const INITIAL_SENIOR_PROFILE: SeniorProfile = {
   id: 'senior-001',
@@ -327,7 +328,8 @@ export const INITIAL_RUFQA_STATE: RufqaPilgrimState = {
       title: 'Carte d\'Urgence Pèlerin',
       text: 'Je suis la pèlerine Fatima Al-Hashemi, Groupe #420. Veuillez m\'aider à rejoindre le Swissôtel Clock Tower ou appeler mon guide au +966 50 555 1212.'
     }
-  ]
+  ],
+  stepActivity: INITIAL_RUFQA_STEP_DATA
 };
 
 export const INITIAL_CARE_LOOP_EVENTS: CareLoopEvent[] = [

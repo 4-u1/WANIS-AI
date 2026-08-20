@@ -24,6 +24,7 @@ import { DICTIONARY } from '../../data/i18n';
 import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 import { RufqaGeolocationMap } from './RufqaGeolocationMap';
 import { RufqaRitualHealthTips } from './RufqaRitualHealthTips';
+import { RufqaStepCounter } from './RufqaStepCounter';
 
 interface RufqaViewProps {
   rufqaState: RufqaPilgrimState;
@@ -176,6 +177,20 @@ export const RufqaView: React.FC<RufqaViewProps> = ({
         onUpdateRufqaState={onUpdateRufqaState}
         language={language}
         voiceEnabled={voiceEnabled}
+      />
+
+      {/* Daily Hajj/Umrah Step Counter & Activity Engine with Mock Sensor Data */}
+      <RufqaStepCounter
+        language={language}
+        voiceEnabled={voiceEnabled}
+        pilgrimName={rufqaState.pilgrimName}
+        initialData={rufqaState.stepActivity}
+        onStepUpdate={(updatedStepData) => {
+          onUpdateRufqaState({
+            ...rufqaState,
+            stepActivity: updatedStepData
+          });
+        }}
       />
 
       {/* Ritual-Specific Health Tips, Hydration & Rest Recommendations */}

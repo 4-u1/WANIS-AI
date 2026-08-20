@@ -220,6 +220,68 @@ export interface RufqaPilgrimState {
   liveTelemetry?: RufqaLiveTelemetry;
   safetyZones?: RufqaSafetyZone[];
   proximityAlerts?: RufqaProximityAlert[];
+  stepActivity?: RufqaStepActivityData;
+}
+
+export type GaitStabilityLevel = 'EXCELLENT' | 'NORMAL' | 'MILD_FATIGUE' | 'HIGH_ASYMMETRY';
+
+export interface RitualCircuitStepProgress {
+  circuitsDone: number;
+  totalCircuits: number;
+  steps: number;
+  targetSteps: number;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'PENDING';
+  lastCircuitCompletedTime?: string;
+}
+
+export interface RufqaStepSensorStream {
+  sensorModel: string;
+  samplingRateHz: number;
+  accelX: number; // in G/mg units
+  accelY: number;
+  accelZ: number;
+  strideLengthCm: number;
+  confidenceScore: number;
+  pedometerStatus: 'STREAMING' | 'PAUSED' | 'CALIBRATING';
+  lastSyncTimestamp: string;
+}
+
+export interface RufqaHourlyStepDistribution {
+  hour: string;
+  labelAr: string;
+  labelEn: string;
+  steps: number;
+  ritualStage?: string;
+  ritualStageAr?: string;
+}
+
+export interface RufqaStepActivityData {
+  dailyStepGoal: number;
+  currentSteps: number;
+  distanceKm: number;
+  activeMinutes: number;
+  caloriesBurnedKcal: number;
+  currentCadenceSpm: number; // steps per minute
+  gaitStability: GaitStabilityLevel;
+  hydrationAlertIntervalSteps: number;
+  stepsSinceLastHydration: number;
+  ritualBreakdown: {
+    tawaf: RitualCircuitStepProgress;
+    sai: RitualCircuitStepProgress;
+    jamaratWalk: {
+      steps: number;
+      targetSteps: number;
+      distanceMeters: number;
+      status: 'IN_PROGRESS' | 'COMPLETED' | 'PENDING';
+    };
+    dailyTransit: {
+      steps: number;
+      distanceMeters: number;
+      status: 'IN_PROGRESS' | 'COMPLETED';
+    };
+  };
+  hourlyDistribution: RufqaHourlyStepDistribution[];
+  sensorStream: RufqaStepSensorStream;
 }
 
 export type SafetyZoneType = 'SAFE_GREEN' | 'CAUTION_YELLOW' | 'DANGER_RED' | 'MEETING_POINT';

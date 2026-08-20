@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { 
   AlertTriangle, 
   AlertOctagon, 
@@ -105,6 +105,9 @@ export const CareCircleTriageToast: React.FC<CareCircleTriageToastProps> = ({
     }
   }, [triageLevel]);
 
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
+
   // Track creation time and calculate live elapsed seconds
   useEffect(() => {
     if (!notification) {
@@ -122,7 +125,7 @@ export const CareCircleTriageToast: React.FC<CareCircleTriageToastProps> = ({
     const elapsedInterval = setInterval(updateElapsed, 1000);
 
     return () => clearInterval(elapsedInterval);
-  }, [notification]);
+  }, [notification?.id]);
 
   // Auto-dismiss countdown timer
   useEffect(() => {
@@ -137,7 +140,7 @@ export const CareCircleTriageToast: React.FC<CareCircleTriageToastProps> = ({
         setRemainingProgress(prev => {
           if (prev <= decrement) {
             clearInterval(timer);
-            onDismiss();
+            onDismissRef.current();
             return 0;
           }
           return prev - decrement;
@@ -146,7 +149,7 @@ export const CareCircleTriageToast: React.FC<CareCircleTriageToastProps> = ({
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [notification, isPaused, autoDismissDuration, onDismiss]);
+  }, [notification?.id, isPaused, autoDismissDuration]);
 
   // Format the elapsed time string according to selected language
   const formattedElapsedTime = useMemo(() => {

@@ -25,6 +25,7 @@ import { ContextualHelpButton } from '../Walkthrough/ContextualHelpButton';
 import { RufqaGeolocationMap } from './RufqaGeolocationMap';
 import { RufqaRitualHealthTips } from './RufqaRitualHealthTips';
 import { RufqaStepCounter } from './RufqaStepCounter';
+import { HajjHealthWellbeingCarousel } from './HajjHealthWellbeingCarousel';
 
 interface RufqaViewProps {
   rufqaState: RufqaPilgrimState;
@@ -191,6 +192,14 @@ export const RufqaView: React.FC<RufqaViewProps> = ({
             stepActivity: updatedStepData
           });
         }}
+      />
+
+      {/* Health & Wellbeing During Hajj Carousel: Progress-Aware & Weather Adaptive Daily Advice */}
+      <HajjHealthWellbeingCarousel
+        rufqaState={rufqaState}
+        language={language}
+        voiceEnabled={voiceEnabled}
+        onOpenContextualHelp={onOpenContextualHelp}
       />
 
       {/* Ritual-Specific Health Tips, Hydration & Rest Recommendations */}

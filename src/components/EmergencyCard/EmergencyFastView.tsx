@@ -22,6 +22,7 @@ import {
 import { EmergencyCardData, SupportedLanguage } from '../../types';
 import { EMERGENCY_TRANSLATIONS } from '../../data/emergencyCardData';
 import { speakText } from '../../services/api';
+import { HealthcareGoogleMap } from '../Common/HealthcareGoogleMap';
 
 interface EmergencyFastViewProps {
   cardData: EmergencyCardData;
@@ -419,6 +420,16 @@ export const EmergencyFastView: React.FC<EmergencyFastViewProps> = ({
         </a>
 
       </div>
+
+      {/* Google Maps Live Healthcare Navigator */}
+      <HealthcareGoogleMap
+        language={language}
+        patientLocation={{
+          lat: 21.422487,
+          lng: 39.826206,
+          name: cardData.fullName
+        }}
+      />
 
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Footprints, 
   Flame, 
@@ -56,12 +56,20 @@ export const RufqaStepCounter: React.FC<RufqaStepCounterProps> = ({
   const [activeTab, setActiveTab] = useState<'overview' | 'rituals' | 'sensor-lab'>('overview');
   const [recentNotification, setRecentNotification] = useState<string | null>(null);
 
-  // Sync state up if requested
+  const onStepUpdateRef = useRef(onStepUpdate);
+  onStepUpdateRef.current = onStepUpdate;
+  const isFirstRender = useRef(true);
+
+  // Sync state up if requested only on actual data mutation after mount
   useEffect(() => {
-    if (onStepUpdate) {
-      onStepUpdate(stepData);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }, [stepData, onStepUpdate]);
+    if (onStepUpdateRef.current) {
+      onStepUpdateRef.current(stepData);
+    }
+  }, [stepData]);
 
   // Live Auto-Pedometer Stream Simulation
   useEffect(() => {

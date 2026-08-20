@@ -44,6 +44,8 @@ import {
 } from '../../data/rufqaGeolocationData';
 import { notificationAudio } from '../../services/notificationService';
 import { speakText } from '../../services/api';
+import { RufqaGoogleMap } from './RufqaGoogleMap';
+import { HealthcareGoogleMap } from '../Common/HealthcareGoogleMap';
 
 interface RufqaGeolocationMapProps {
   rufqaState: RufqaPilgrimState;
@@ -64,7 +66,7 @@ export const RufqaGeolocationMap: React.FC<RufqaGeolocationMapProps> = ({
   const [safetyZones, setSafetyZones] = useState<RufqaSafetyZone[]>(INITIAL_RUFQA_SAFETY_ZONES);
   const [proximityAlerts, setProximityAlerts] = useState<RufqaProximityAlert[]>(INITIAL_RUFQA_PROXIMITY_ALERTS);
   const [activePresetId, setActivePresetId] = useState<string>('preset-tawaf-gate79');
-  const [mapMode, setMapMode] = useState<'schematic' | 'satellite' | 'heatmap'>('schematic');
+  const [mapMode, setMapMode] = useState<'google_maps' | 'schematic' | 'satellite' | 'healthcare'>('google_maps');
   const [selectedZone, setSelectedZone] = useState<RufqaSafetyZone | null>(safetyZones[0]);
   const [isSimulatingLiveTick, setIsSimulatingLiveTick] = useState<boolean>(true);
   const [hapticPingMessage, setHapticPingMessage] = useState<string | null>(null);
@@ -218,27 +220,29 @@ export const RufqaGeolocationMap: React.FC<RufqaGeolocationMapProps> = ({
           </div>
 
           {/* Map Layer Mode Toggles */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl self-start sm:self-center">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl self-start sm:self-center flex-wrap">
+            <button
+              type="button"
+              onClick={() => setMapMode('google_maps')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${mapMode === 'google_maps' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>{isRtl ? 'خريطة Google التفاعلية' : 'Google Maps Live'}</span>
+            </button>
             <button
               type="button"
               onClick={() => setMapMode('schematic')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${mapMode === 'schematic' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${mapMode === 'schematic' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
-              {isRtl ? 'المخطط الهندسي' : 'Schematic'}
+              {isRtl ? 'رادار المخطط الهندسي' : 'Schematic Radar'}
             </button>
             <button
               type="button"
-              onClick={() => setMapMode('satellite')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${mapMode === 'satellite' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
+              onClick={() => setMapMode('healthcare')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${mapMode === 'healthcare' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
-              {isRtl ? 'الأقمار الصناعية' : 'Satellite'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapMode('heatmap')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${mapMode === 'heatmap' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'text-slate-600 dark:text-slate-400'}`}
-            >
-              {isRtl ? 'كثافة الحشود' : 'Crowd Heat'}
+              <span>🏥</span>
+              <span>{isRtl ? 'مستشفيات الطوارئ' : 'Emergency Hospital Nav'}</span>
             </button>
           </div>
         </div>
@@ -294,152 +298,165 @@ export const RufqaGeolocationMap: React.FC<RufqaGeolocationMapProps> = ({
           </div>
         </div>
 
-        {/* HIGH-PRECISION INTERACTIVE MAP & RADAR CANVAS */}
-        <div 
-          id="rufqa-interactive-geofence-radar"
-          className="relative w-full h-80 sm:h-96 rounded-3xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-950 shadow-inner flex items-center justify-center select-none"
-        >
-          {/* Background Map Visual (Schematic or Satellite mode) */}
-          <div className={`absolute inset-0 transition-opacity duration-500 ${
-            mapMode === 'satellite' 
-              ? 'bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-stone-950 to-black' 
-              : mapMode === 'heatmap'
-              ? 'bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-950/80 via-slate-950 to-black'
-              : 'bg-slate-950'
-          }`}>
-            {/* Grid Lines */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-30"></div>
-          </div>
-
-          {/* Radar Radial Scanning Sweeper */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-72 sm:w-88 h-72 sm:h-88 rounded-full border border-teal-500/20 animate-spin opacity-40 [animation-duration:12s]">
-              <div className="w-1/2 h-1/2 bg-gradient-to-br from-teal-400/20 to-transparent rounded-tl-full"></div>
-            </div>
-            <div className="absolute w-52 h-52 rounded-full border border-teal-500/30"></div>
-            <div className="absolute w-32 h-32 rounded-full border border-teal-500/40"></div>
-          </div>
-
-          {/* Holy Sites Visual Landmarks on Map */}
-          
-          {/* 1. Kaaba & Mataf Center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-            <div className="w-10 h-10 bg-slate-900 border-2 border-amber-400 rounded-lg shadow-lg shadow-amber-400/30 flex items-center justify-center text-amber-300 font-bold text-[10px]">
-              🕋
-            </div>
-            <span className="text-[10px] font-black text-amber-300 mt-1 bg-black/80 px-2 py-0.5 rounded-full border border-amber-400/40">
-              {isRtl ? 'الكعبة المشرفة / صحن المطاف' : 'Holy Kaaba / Mataf'}
-            </span>
-          </div>
-
-          {/* 2. King Fahd Gate 79 (Designated Meeting Point) */}
-          <div className="absolute top-[68%] left-[48%] -translate-x-1/2 flex flex-col items-center group cursor-pointer">
-            <div className="relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-              <div className="w-7 h-7 rounded-full bg-teal-600 border-2 border-white flex items-center justify-center text-white text-xs shadow-md">
-                <MapPin className="w-4 h-4" />
-              </div>
-            </div>
-            <span className="text-[9px] font-bold text-teal-200 bg-slate-900/90 px-1.5 py-0.5 rounded-md mt-1 border border-teal-500/40 whitespace-nowrap">
-              {isRtl ? 'باب الملك فهد 79 (نقطة التجمع)' : 'Gate 79 (Meeting Point)'}
-            </span>
-          </div>
-
-          {/* 3. Swissôtel Clock Tower */}
-          <div className="absolute bottom-6 right-6 flex flex-col items-center">
-            <div className="w-7 h-7 rounded-xl bg-blue-600 border border-blue-400 flex items-center justify-center text-white text-xs">
-              <Building className="w-4 h-4" />
-            </div>
-            <span className="text-[9px] font-bold text-blue-200 bg-slate-900/80 px-1.5 py-0.5 rounded mt-0.5">
-              {isRtl ? 'فندق سويس أوتيل' : 'Swissôtel'}
-            </span>
-          </div>
-
-          {/* 4. Marwah Boundary */}
-          <div className="absolute top-6 right-10 flex flex-col items-center">
-            <div className="w-6 h-6 rounded-lg bg-amber-600/80 border border-amber-400 flex items-center justify-center text-white text-[10px]">
-              🏃
-            </div>
-            <span className="text-[9px] font-bold text-amber-200 bg-slate-900/80 px-1.5 py-0.5 rounded mt-0.5">
-              {isRtl ? 'مخرج المروة' : 'Marwah Exit'}
-            </span>
-          </div>
-
-          {/* 5. Group Leader Ahmad Marker */}
-          <div className="absolute top-[64%] left-[44%] flex flex-col items-center">
-            <div className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-indigo-300 flex items-center justify-center text-white text-[9px] shadow-sm">
-              <Users className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[8px] font-extrabold text-indigo-200 bg-slate-900/90 px-1 rounded mt-0.5">
-              {isRtl ? 'المرشد أحمد' : 'Guide Ahmad'}
-            </span>
-          </div>
-
-          {/* SENIOR LIVE LOCATION PIN (Fatima) WITH COMPASS CONE */}
-          <div 
-            className="absolute transition-all duration-700 ease-out z-20"
-            style={{
-              top: activePresetId === 'preset-tawaf-gate79' ? '65%' :
-                   activePresetId === 'preset-sai-boundary' ? '25%' :
-                   activePresetId === 'preset-mina-camp42' ? '50%' :
-                   activePresetId === 'preset-jamarat-stray' ? '15%' : '80%',
-              left: activePresetId === 'preset-tawaf-gate79' ? '49%' :
-                    activePresetId === 'preset-sai-boundary' ? '70%' :
-                    activePresetId === 'preset-mina-camp42' ? '50%' :
-                    activePresetId === 'preset-jamarat-stray' ? '20%' : '75%'
+        {/* CONDITIONALLY RENDER GOOGLE MAPS VS HEALTHCARE MAP VS SCHEMATIC RADAR */}
+        {mapMode === 'google_maps' ? (
+          <RufqaGoogleMap
+            telemetry={telemetry}
+            safetyZones={safetyZones}
+            activePresetId={activePresetId}
+            rufqaState={rufqaState}
+            language={language}
+            onSelectPreset={(presetId) => {
+              const p = RITUAL_SIMULATION_PRESETS.find(x => x.id === presetId);
+              if (p) handleApplyPreset(p);
             }}
+            onSendHapticPing={handleSendHapticPing}
+          />
+        ) : mapMode === 'healthcare' ? (
+          <HealthcareGoogleMap
+            language={language}
+            patientLocation={{
+              lat: telemetry.currentLat,
+              lng: telemetry.currentLng,
+              name: rufqaState.pilgrimName
+            }}
+          />
+        ) : (
+          /* HIGH-PRECISION INTERACTIVE SCHEMATIC RADAR CANVAS */
+          <div 
+            id="rufqa-interactive-geofence-radar"
+            className="relative w-full h-80 sm:h-96 rounded-3xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-950 shadow-inner flex items-center justify-center select-none"
           >
-            {/* Accuracy Bubble */}
-            <div className="absolute -inset-4 bg-teal-400/20 rounded-full animate-ping pointer-events-none"></div>
+            {/* Background Map Visual (Schematic or Satellite mode) */}
+            <div className="absolute inset-0 bg-slate-950">
+              {/* Grid Lines */}
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-30"></div>
+            </div>
 
-            {/* Compass Cone Direction */}
+            {/* Radar Radial Scanning Sweeper */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-72 sm:w-88 h-72 sm:h-88 rounded-full border border-teal-500/20 animate-spin opacity-40 [animation-duration:12s]">
+                <div className="w-1/2 h-1/2 bg-gradient-to-br from-teal-400/20 to-transparent rounded-tl-full"></div>
+              </div>
+              <div className="absolute w-52 h-52 rounded-full border border-teal-500/30"></div>
+              <div className="absolute w-32 h-32 rounded-full border border-teal-500/40"></div>
+            </div>
+
+            {/* Holy Sites Visual Landmarks on Map */}
+            {/* 1. Kaaba & Mataf Center */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+              <div className="w-10 h-10 bg-slate-900 border-2 border-amber-400 rounded-lg shadow-lg shadow-amber-400/30 flex items-center justify-center text-amber-300 font-bold text-[10px]">
+                🕋
+              </div>
+              <span className="text-[10px] font-black text-amber-300 mt-1 bg-black/80 px-2 py-0.5 rounded-full border border-amber-400/40">
+                {isRtl ? 'الكعبة المشرفة / صحن المطاف' : 'Holy Kaaba / Mataf'}
+              </span>
+            </div>
+
+            {/* 2. King Fahd Gate 79 (Designated Meeting Point) */}
+            <div className="absolute top-[68%] left-[48%] -translate-x-1/2 flex flex-col items-center group cursor-pointer">
+              <div className="relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                <div className="w-7 h-7 rounded-full bg-teal-600 border-2 border-white flex items-center justify-center text-white text-xs shadow-md">
+                  <MapPin className="w-4 h-4" />
+                </div>
+              </div>
+              <span className="text-[9px] font-bold text-teal-200 bg-slate-900/90 px-1.5 py-0.5 rounded-md mt-1 border border-teal-500/40 whitespace-nowrap">
+                {isRtl ? 'باب الملك فهد 79 (نقطة التجمع)' : 'Gate 79 (Meeting Point)'}
+              </span>
+            </div>
+
+            {/* 3. Swissôtel Clock Tower */}
+            <div className="absolute bottom-6 right-6 flex flex-col items-center">
+              <div className="w-7 h-7 rounded-xl bg-blue-600 border border-blue-400 flex items-center justify-center text-white text-xs">
+                <Building className="w-4 h-4" />
+              </div>
+              <span className="text-[9px] font-bold text-blue-200 bg-slate-900/80 px-1.5 py-0.5 rounded mt-0.5">
+                {isRtl ? 'فندق سويس أوتيل' : 'Swissôtel'}
+              </span>
+            </div>
+
+            {/* 4. Marwah Boundary */}
+            <div className="absolute top-6 right-10 flex flex-col items-center">
+              <div className="w-6 h-6 rounded-lg bg-amber-600/80 border border-amber-400 flex items-center justify-center text-white text-[10px]">
+                🏃
+              </div>
+              <span className="text-[9px] font-bold text-amber-200 bg-slate-900/80 px-1.5 py-0.5 rounded mt-0.5">
+                {isRtl ? 'مخرج المروة' : 'Marwah Exit'}
+              </span>
+            </div>
+
+            {/* 5. Group Leader Ahmad Marker */}
+            <div className="absolute top-[64%] left-[44%] flex flex-col items-center">
+              <div className="w-6 h-6 rounded-full bg-indigo-600 border-2 border-indigo-300 flex items-center justify-center text-white text-[9px] shadow-sm">
+                <Users className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-[8px] font-extrabold text-indigo-200 bg-slate-900/90 px-1 rounded mt-0.5">
+                {isRtl ? 'المرشد أحمد' : 'Guide Ahmad'}
+              </span>
+            </div>
+
+            {/* SENIOR LIVE LOCATION PIN (Fatima) WITH COMPASS CONE */}
             <div 
-              className="absolute -top-6 -left-6 w-16 h-16 pointer-events-none opacity-60"
-              style={{ transform: `rotate(${telemetry.headingDegrees}deg)` }}
+              className="absolute transition-all duration-700 ease-out z-20"
+              style={{
+                top: activePresetId === 'preset-tawaf-gate79' ? '65%' :
+                     activePresetId === 'preset-sai-boundary' ? '25%' :
+                     activePresetId === 'preset-mina-camp42' ? '50%' :
+                     activePresetId === 'preset-jamarat-stray' ? '15%' : '80%',
+                left: activePresetId === 'preset-tawaf-gate79' ? '49%' :
+                      activePresetId === 'preset-sai-boundary' ? '70%' :
+                      activePresetId === 'preset-mina-camp42' ? '50%' :
+                      activePresetId === 'preset-jamarat-stray' ? '20%' : '75%'
+              }}
             >
-              <div className="w-full h-full bg-gradient-to-t from-teal-400/40 to-transparent clip-triangle"></div>
+              <div className="absolute -inset-4 bg-teal-400/20 rounded-full animate-ping pointer-events-none"></div>
+              <div 
+                className="absolute -top-6 -left-6 w-16 h-16 pointer-events-none opacity-60"
+                style={{ transform: `rotate(${telemetry.headingDegrees}deg)` }}
+              >
+                <div className="w-full h-full bg-gradient-to-t from-teal-400/40 to-transparent clip-triangle"></div>
+              </div>
+
+              <div className="relative cursor-pointer group">
+                <div className="w-10 h-10 rounded-full bg-amber-500 border-3 border-white dark:border-slate-900 shadow-xl flex items-center justify-center text-slate-950 font-black text-xs ring-4 ring-teal-400/40">
+                  <span>🧕</span>
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
+
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2.5 rounded-xl whitespace-nowrap shadow-xl border border-slate-700 pointer-events-none">
+                  <strong className="text-amber-400 block">{rufqaState.pilgrimName}</strong>
+                  <span>{telemetry.lastUpdated}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Senior Avatar Node */}
-            <div className="relative cursor-pointer group">
-              <div className="w-10 h-10 rounded-full bg-amber-500 border-3 border-white dark:border-slate-900 shadow-xl flex items-center justify-center text-slate-950 font-black text-xs ring-4 ring-teal-400/40">
-                <span>🧕</span>
-              </div>
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
+            {/* Dotted Breadcrumb Trail */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-70">
+              <path
+                d="M 220 280 Q 240 260 260 250 T 270 240"
+                fill="none"
+                stroke="#0d9488"
+                strokeWidth="2"
+                strokeDasharray="4,4"
+              />
+            </svg>
 
-              {/* Hover Badge */}
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2.5 rounded-xl whitespace-nowrap shadow-xl border border-slate-700 pointer-events-none">
-                <strong className="text-amber-400 block">{rufqaState.pilgrimName}</strong>
-                <span>{telemetry.lastUpdated}</span>
-              </div>
+            {/* Top-Right HUD Badge */}
+            <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700 text-white text-[11px] flex items-center gap-2">
+              <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span className="font-mono">{telemetry.currentLat}° N, {telemetry.currentLng}° E</span>
+            </div>
+
+            {/* Bottom-Left Compass Heading */}
+            <div className="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-slate-700 text-white text-xs flex items-center gap-2">
+              <Compass className="w-4 h-4 text-amber-400" />
+              <span className="font-bold">{telemetry.headingDegrees}° {isRtl ? 'جنوب' : 'South'}</span>
+              <span className="text-slate-500">•</span>
+              <span className="text-slate-400">{telemetry.speedKmh} km/h</span>
             </div>
           </div>
-
-          {/* Dotted Breadcrumb Trail */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-70">
-            <path
-              d="M 220 280 Q 240 260 260 250 T 270 240"
-              fill="none"
-              stroke="#0d9488"
-              strokeWidth="2"
-              strokeDasharray="4,4"
-            />
-          </svg>
-
-          {/* Top-Right HUD Badge */}
-          <div className="absolute top-3 right-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700 text-white text-[11px] flex items-center gap-2">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span className="font-mono">{telemetry.currentLat}° N, {telemetry.currentLng}° E</span>
-          </div>
-
-          {/* Bottom-Left Compass Heading */}
-          <div className="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md p-2 rounded-2xl border border-slate-700 text-white text-xs flex items-center gap-2">
-            <Compass className="w-4 h-4 text-amber-400" />
-            <span className="font-bold">{telemetry.headingDegrees}° {isRtl ? 'جنوب' : 'South'}</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-slate-400">{telemetry.speedKmh} km/h</span>
-          </div>
-        </div>
+        )}
 
         {/* Haptic / Voice Ping Toast Message */}
         {hapticPingMessage && (

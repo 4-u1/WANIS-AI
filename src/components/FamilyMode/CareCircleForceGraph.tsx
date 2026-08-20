@@ -420,8 +420,14 @@ export const CareCircleForceGraph: React.FC<CareCircleForceGraphProps> = ({
 
     nodeGroup.call(drag as any);
 
-    // Select senior node by default on load
-    if (nodes[0]) setSelectedNode(nodes[0]);
+    // Select senior node by default on load if none selected
+    setSelectedNode(prev => {
+      if (!prev && nodes[0]) return nodes[0];
+      if (prev && nodes.length > 0) {
+        return nodes.find(n => n.id === prev.id) || nodes[0];
+      }
+      return prev;
+    });
 
     return () => {
       simulation.stop();

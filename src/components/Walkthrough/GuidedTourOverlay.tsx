@@ -77,7 +77,7 @@ export const GuidedTourOverlay: React.FC<GuidedTourOverlayProps> = ({
     if (currentStep.targetMode && currentStep.targetMode !== currentMode) {
       onSwitchMode(currentStep.targetMode);
     }
-  }, [isActive, currentStep, currentMode, onSwitchMode, isTourCompleted]);
+  }, [isActive, currentStep.targetMode, currentMode, onSwitchMode, isTourCompleted]);
 
   // Locate target element and calculate bounding box
   useEffect(() => {

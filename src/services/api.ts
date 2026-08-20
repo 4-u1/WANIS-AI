@@ -1,5 +1,11 @@
 import { SupportedLanguage, TriageLevel, DoctorBriefData } from '../types';
 
+// Standardized Secure Headers for CSRF and Request Origin Integrity
+const API_SECURE_HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Requested-With': 'WanisAI-Client'
+};
+
 export interface CheckInAnalysisResponse {
   sentiment: 'positive' | 'subdued' | 'concerning' | 'distressed';
   triageLevel: TriageLevel;
@@ -25,7 +31,7 @@ export async function analyzeSeniorCheckin(params: {
   try {
     const res = await fetch('/api/gemini/analyze-checkin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -76,7 +82,7 @@ export async function generateDoctorBrief(params: {
   try {
     const res = await fetch('/api/gemini/doctor-brief', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -109,7 +115,7 @@ export async function fetchRufqaAssist(params: {
   try {
     const res = await fetch('/api/gemini/rufqa-assist', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -137,7 +143,7 @@ export async function sendCompanionChat(params: {
   try {
     const res = await fetch('/api/gemini/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -167,7 +173,7 @@ export async function queryClinicalCopilot(params: {
   try {
     const res = await fetch('/api/gemini/clinical-copilot', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -205,7 +211,7 @@ export async function fetchFamilyAdvisorInsights(params: {
   try {
     const res = await fetch('/api/gemini/family-advisor', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -250,7 +256,7 @@ export async function fetchCognitiveExercise(params: {
   try {
     const res = await fetch('/api/gemini/cognitive-exercise', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: API_SECURE_HEADERS,
       body: JSON.stringify(params)
     });
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);

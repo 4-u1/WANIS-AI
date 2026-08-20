@@ -545,4 +545,27 @@ export interface MedicationSyncAuditLog {
   encryptionProtocol: string;
 }
 
+export interface ApiValidationErrorDetail {
+  field: string;
+  message: string;
+  code?: string;
+}
+
+export interface ApiStandardErrorResponse {
+  success: false;
+  error: string;
+  message: string;
+  code: string;
+  details?: ApiValidationErrorDetail[];
+  retryAfterSeconds?: number;
+  timestamp: string;
+}
+
+export interface ApiStandardSuccessResponse<T = any> {
+  success: true;
+  data: T;
+  timestamp: string;
+}
+
+
 

@@ -1,5 +1,68 @@
 @import "tailwindcss";
 
+/* Universal Responsive Base & Touch Optimizations */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Safe Area Inset Support for Modern Mobile Devices (iOS & Android) */
+.safe-area-pt {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+.safe-area-pb {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* Dynamic Tactile React Button Utilities */
+button, [role="button"] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.react-btn-tap {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.react-btn-tap:active {
+  transform: scale(0.96);
+}
+
+.react-btn-tap:hover {
+  transform: translateY(-1px);
+}
+
+/* Fluid Horizontal Scroll Container for Navigation Tabs & Badges */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Glassmorphism & Elevated Backdrops */
+.backdrop-blur-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 @media print {
   body {
     background: #ffffff !important;
@@ -40,3 +103,4 @@
     page-break-inside: avoid !important;
   }
 }
+

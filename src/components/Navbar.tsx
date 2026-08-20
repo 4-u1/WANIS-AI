@@ -110,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Quick Actions / Triage / SOS / Settings */}
-          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             
             {/* Upgraded React "User Guide / دليل الاستخدام" Component */}
             <UserGuideButton
@@ -132,18 +132,33 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="voice-toggle-btn"
               onClick={onToggleVoice}
               aria-label="Toggle Voice Readout"
-              className={`p-2 sm:p-2.5 rounded-xl border text-sm font-medium transition-colors ${voiceEnabled ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950 dark:text-teal-300 dark:border-teal-800' : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
+              className={`p-1.5 sm:p-2 rounded-xl border text-sm font-medium transition-all react-btn-tap cursor-pointer ${voiceEnabled ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950 dark:text-teal-300 dark:border-teal-800' : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
               title={voiceEnabled ? 'Spoken Voice Output Enabled' : 'Voice Output Muted'}
             >
-              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {voiceEnabled ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
             </button>
 
-            {/* Medication Reminder & Push Notifications Button */}
+            {/* Language Switcher */}
+            <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 border border-slate-200 dark:border-slate-700">
+              <Globe className="w-3 h-3 text-slate-400 ml-1 mr-1 hidden md:block" />
+              {(['ar', 'en', 'fr'] as SupportedLanguage[]).map((lang) => (
+                <button
+                  key={lang}
+                  id={`lang-btn-${lang}`}
+                  onClick={() => onSelectLanguage(lang)}
+                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-lg transition-all react-btn-tap cursor-pointer ${language === lang ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+                >
+                  {lang === 'ar' ? 'عربي' : lang === 'en' ? 'EN' : 'FR'}
+                </button>
+              ))}
+            </div>
+
+            {/* Medication Reminder Button - Hidden on mobile (available in mobile bottom bar) */}
             {onOpenReminderCenter && (
               <button
                 id="medication-reminders-nav-btn"
                 onClick={onOpenReminderCenter}
-                className={`relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold border transition-all ${
+                className={`hidden md:flex relative items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold border transition-all react-btn-tap cursor-pointer ${
                   pendingMedicationsCount > 0
                     ? 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/70 dark:hover:bg-amber-900/80 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700'
                     : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
@@ -151,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={language === 'ar' ? 'تنبيهات الأدوية وإشعارات الجرعات' : 'Medication Reminders & Push Alerts'}
               >
                 <Bell className={`w-4 h-4 ${pendingMedicationsCount > 0 ? 'text-amber-600 dark:text-amber-400 animate-bounce' : 'text-slate-500'}`} />
-                <span className="hidden md:inline">{language === 'ar' ? 'الأدوية' : 'Meds'}</span>
+                <span>{language === 'ar' ? 'الأدوية' : 'Meds'}</span>
                 {pendingMedicationsCount > 0 && (
                   <span className="w-4 h-4 rounded-full bg-amber-500 text-white font-black text-[10px] flex items-center justify-center -mr-0.5">
                     {pendingMedicationsCount}
@@ -160,48 +175,33 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Consent & Privacy Button */}
+            {/* Consent & Privacy Button - Hidden on small mobile */}
             <button
               id="consent-settings-btn"
               onClick={onOpenConsentModal}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-colors"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all react-btn-tap cursor-pointer"
               title="4-Tier Privacy & Consent Settings"
             >
               <Lock className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-              <span className="hidden lg:inline">Consent</span>
+              <span>Consent</span>
             </button>
-
-            {/* Language Switcher */}
-            <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 sm:p-1 border border-slate-200 dark:border-slate-700">
-              <Globe className="w-3.5 h-3.5 text-slate-400 ml-1 mr-1 hidden md:block" />
-              {(['ar', 'en', 'fr'] as SupportedLanguage[]).map((lang) => (
-                <button
-                  key={lang}
-                  id={`lang-btn-${lang}`}
-                  onClick={() => onSelectLanguage(lang)}
-                  className={`px-1.5 sm:px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-lg transition-all ${language === lang ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
-                >
-                  {lang === 'ar' ? 'عربي' : lang === 'en' ? 'EN' : 'FR'}
-                </button>
-              ))}
-            </div>
 
             {/* Digital Emergency Card Button */}
             <button
               id="emergency-card-nav-btn"
               onClick={onOpenEmergencyCard}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-900 to-emerald-900 hover:from-teal-800 hover:to-emerald-800 text-white border border-teal-500/40 shadow-2xs transition-transform active:scale-95 group"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-teal-900 to-emerald-900 hover:from-teal-800 hover:to-emerald-800 text-white border border-teal-500/40 shadow-2xs transition-all react-btn-tap cursor-pointer group"
               title="Digital Safety Card & Medical ID"
             >
               <ShieldAlert className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
               <span className="hidden lg:inline">{language === 'ar' ? 'بطاقة الطوارئ' : 'Emergency Card'}</span>
             </button>
 
-            {/* Emergency SOS Button */}
+            {/* Emergency SOS Button - Hidden on mobile because it is permanently pinned on MobileBottomNav */}
             <button
               id="emergency-sos-btn"
               onClick={onTriggerEmergency}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition-transform active:scale-95"
+              className="hidden sm:flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition-all react-btn-tap cursor-pointer"
             >
               <ShieldAlert className="w-4 h-4 animate-bounce" />
               <span className="uppercase tracking-wider font-extrabold">SOS</span>
@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-senior"
             onClick={() => onSelectMode('senior')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'senior' ? 'bg-teal-600 text-white shadow-sm font-bold' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'senior' ? 'bg-teal-600 text-white shadow-sm font-bold scale-[1.02]' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
           >
             <HeartHandshake className="w-4 h-4 shrink-0" />
             <span>{t.seniorMode}</span>
@@ -227,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-family"
             onClick={() => onSelectMode('family')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'family' ? 'bg-teal-600 text-white shadow-sm font-bold' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'family' ? 'bg-teal-600 text-white shadow-sm font-bold scale-[1.02]' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
           >
             <Users className="w-4 h-4 shrink-0" />
             <span>{t.familyMode}</span>
@@ -236,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-clinician"
             onClick={() => onSelectMode('clinician')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'clinician' ? 'bg-teal-600 text-white shadow-sm font-bold' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'clinician' ? 'bg-teal-600 text-white shadow-sm font-bold scale-[1.02]' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
           >
             <Stethoscope className="w-4 h-4 shrink-0" />
             <span>{t.clinicianMode}</span>
@@ -245,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-rufqa"
             onClick={() => onSelectMode('rufqa')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'rufqa' ? 'bg-amber-600 text-white shadow-sm font-bold' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'rufqa' ? 'bg-amber-600 text-white shadow-sm font-bold scale-[1.02]' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100'}`}
           >
             <Compass className="w-4 h-4 text-amber-400 shrink-0" />
             <span>{t.rufqaMode}</span>
@@ -254,7 +254,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-orchestrator"
             onClick={() => onSelectMode('orchestrator')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'orchestrator' ? 'bg-indigo-600 text-white shadow-sm font-bold' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'orchestrator' ? 'bg-indigo-600 text-white shadow-sm font-bold scale-[1.02]' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
           >
             <Cpu className="w-4 h-4 shrink-0" />
             <span>{t.orchestratorMode}</span>
@@ -263,7 +263,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-mode-investor"
             onClick={() => onSelectMode('investor')}
-            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 active:scale-95 ${currentMode === 'investor' ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm font-bold' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 react-btn-tap cursor-pointer ${currentMode === 'investor' ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm font-bold scale-[1.02]' : 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-200'}`}
           >
             <Briefcase className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>{t.investorMode}</span>

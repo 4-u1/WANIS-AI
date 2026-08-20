@@ -597,7 +597,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
       
       {/* Top Main Navigation */}
       <Navbar
@@ -630,6 +630,7 @@ export default function App() {
             longitudinalData={MOCK_LONGITUDINAL_DATA}
             careCircle={MOCK_CARE_CIRCLE}
             onOpenCheckinModal={() => setIsCheckinModalOpen(true)}
+            onSaveCheckIn={handleCheckinComplete}
             onToggleMedicationTaken={handleToggleMedicationTaken}
             onNavigateToMode={setCurrentMode}
             language={language}

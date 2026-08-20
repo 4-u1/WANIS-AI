@@ -85,15 +85,15 @@ export const UserGuideButton: React.FC<UserGuideButtonProps> = ({
           type="button"
           id="btn-user-guide-main"
           onClick={onOpenHowToUse}
-          className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs font-extrabold text-teal-800 dark:text-teal-200 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 rounded-l-xl rtl:rounded-l-none rtl:rounded-r-xl transition-all cursor-pointer group active:scale-95"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-extrabold text-teal-800 dark:text-teal-200 hover:bg-teal-100/70 dark:hover:bg-teal-900/60 rounded-l-xl rtl:rounded-l-none rtl:rounded-r-xl transition-all cursor-pointer group active:scale-95 whitespace-nowrap"
           title={isAr ? 'دليل الاستخدام، الجولة التفاعلية ومركز المساعدة (اختصار: ?)' : 'User Guide, Walkthrough & Help Center (Press ?)'}
         >
-          <div className="w-5 h-5 rounded-lg bg-teal-600/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:rotate-12 transition-transform shrink-0">
-            <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-300" />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg bg-teal-600/10 dark:bg-teal-400/15 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:rotate-12 transition-transform shrink-0">
+            <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-teal-600 dark:text-teal-300" />
           </div>
           
           <span className="font-bold tracking-tight">
-            {isAr ? 'دليل الاستخدام' : language === 'fr' ? 'Guide d\'utilisation' : 'User Guide'}
+            {isAr ? 'دليل الاستخدام' : language === 'fr' ? 'Guide' : 'Guide'}
           </span>
 
           {/* Keyboard shortcut hint badge */}

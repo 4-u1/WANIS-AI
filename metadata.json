@@ -1,6 +1,6 @@
 {
   "name": "WanisAI - Senior Cognitive Health & Care Intelligence Platform",
   "description": "Clinically responsible, culturally intelligent senior cognitive wellbeing ecosystem featuring continuous care orchestration, Anticholinergic Cognitive Burden (ACB) intelligence, Doctor Brief 2.0, and Rufqa Hajj/Umrah companion.",
-  "requestFramePermissions": ["microphone", "geolocation"],
+  "requestFramePermissions": ["microphone", "geolocation", "camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

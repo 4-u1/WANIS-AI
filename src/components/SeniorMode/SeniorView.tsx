@@ -29,6 +29,7 @@ import { SeniorVoiceShortcutsTip } from './SeniorVoiceShortcutsTip';
 import { SeniorCognitiveTrends } from './SeniorCognitiveTrends';
 import { DailyCognitiveGoalTracker } from './DailyCognitiveGoalTracker';
 import { SeniorSuggestedSocialActivity } from './SeniorSuggestedSocialActivity';
+import { EmotionalCheckpointModal } from './EmotionalCheckpointModal';
 import { WaneesLogo } from '../WaneesLogo';
 import { LongitudinalMetrics } from '../../types';
 
@@ -38,6 +39,7 @@ interface SeniorViewProps {
   medications: Medication[];
   longitudinalData?: LongitudinalMetrics[];
   onOpenCheckinModal: () => void;
+  onSaveCheckIn?: (record: CheckInRecord) => void;
   onToggleMedicationTaken: (id: string) => void;
   onNavigateToMode: (mode: PersonaMode) => void;
   language: SupportedLanguage;
@@ -56,6 +58,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   medications = [],
   longitudinalData,
   onOpenCheckinModal,
+  onSaveCheckIn,
   onToggleMedicationTaken,
   onNavigateToMode,
   language,
@@ -71,6 +74,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
   const isRtl = language === 'ar';
   const [activeTab, setActiveTab] = useState<'overview' | 'meds' | 'trends' | 'chat'>('overview');
   const [isHowWaneesUnderstandsOpen, setIsHowWaneesUnderstandsOpen] = useState(false);
+  const [isEmotionalCheckpointOpen, setIsEmotionalCheckpointOpen] = useState(false);
   const safeMedications = medications || [];
 
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
@@ -133,10 +137,21 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
               <span>{t.startCheckin}</span>
             </button>
 
+            {/* Quick 1-Tap Emotional Checkpoint Button */}
+            <button
+              id="btn-quick-emotional-checkpoint-hero"
+              onClick={() => setIsEmotionalCheckpointOpen(true)}
+              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/20 hover:bg-white/30 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-all border border-white/25 cursor-pointer shadow-sm active:scale-95 group"
+              title={language === 'ar' ? 'تسجيل سريع للمزاج بضغطة واحدة دون فحص صوتي كامل' : 'Quick 1-tap mood checkpoint without full voice session'}
+            >
+              <Smile className="w-5 h-5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
+              <span>{language === 'ar' ? 'نقطة اطمئنان سريعة 🌸' : 'Mood Checkpoint 🌸'}</span>
+            </button>
+
             <button
               id="goto-rufqa-hero-btn"
               onClick={() => onNavigateToMode('rufqa')}
-              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/20 cursor-pointer"
+              className="w-full sm:w-auto px-4 sm:px-5 py-3.5 sm:py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-teal-100 hover:text-white font-bold text-sm sm:text-base backdrop-blur flex items-center justify-center gap-2 transition-colors border border-white/15 cursor-pointer"
             >
               <Compass className="w-5 h-5 text-amber-300 shrink-0" />
               <span>{language === 'ar' ? 'رفقة الحج والعمرة' : 'Rufqa Pilgrimage'}</span>
@@ -146,11 +161,11 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
       </section>
 
       {/* Sub-Navigation Tabs for Senior */}
-      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:max-w-lg overflow-x-auto scrollbar-none">
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full sm:max-w-xl overflow-x-auto scrollbar-none">
         <button
           id="senior-tab-overview"
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap react-btn-tap cursor-pointer ${activeTab === 'overview' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           {language === 'ar' ? 'اليوميات' : 'Daily Wellbeing'}
         </button>
@@ -158,7 +173,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         <button
           id="senior-tab-meds"
           onClick={() => setActiveTab('meds')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap react-btn-tap cursor-pointer ${activeTab === 'meds' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           {t.medicationTracker}
         </button>
@@ -166,7 +181,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         <button
           id="senior-tab-trends"
           onClick={() => setActiveTab('trends')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 text-teal-700 dark:text-teal-300 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap react-btn-tap cursor-pointer ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 text-teal-700 dark:text-teal-300 shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           {language === 'ar' ? 'مؤشرات المزاج والنوم' : 'Cognitive Trends'}
         </button>
@@ -174,7 +189,7 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         <button
           id="senior-tab-chat"
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap cursor-pointer ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
+          className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-bold transition-all text-center whitespace-nowrap react-btn-tap cursor-pointer ${activeTab === 'chat' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}
         >
           {language === 'ar' ? 'محادثة ونيس' : 'Voice Companion'}
         </button>
@@ -405,6 +420,19 @@ export const SeniorView: React.FC<SeniorViewProps> = ({
         senior={senior}
         medications={medications}
         latestCheckIn={latestCheckIn}
+      />
+
+      {/* Quick 1-Tap Emotional Checkpoint Modal */}
+      <EmotionalCheckpointModal
+        isOpen={isEmotionalCheckpointOpen}
+        onClose={() => setIsEmotionalCheckpointOpen(false)}
+        onSaveCheckIn={(record) => {
+          if (onSaveCheckIn) {
+            onSaveCheckIn(record);
+          }
+        }}
+        language={language}
+        senior={senior}
       />
 
     </div>

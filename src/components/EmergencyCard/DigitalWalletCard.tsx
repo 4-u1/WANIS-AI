@@ -37,6 +37,7 @@ interface DigitalWalletCardProps {
   onTogglePilgrimageMode: () => void;
   onOpenFastEmergencyView: () => void;
   onOpenPublicWebView: () => void;
+  onOpenDynamicQR?: () => void;
   onOpenPrintModal?: () => void;
   onReviewCard: () => void;
   voiceEnabled: boolean;
@@ -50,6 +51,7 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
   onTogglePilgrimageMode,
   onOpenFastEmergencyView,
   onOpenPublicWebView,
+  onOpenDynamicQR,
   onOpenPrintModal,
   onReviewCard,
   voiceEnabled
@@ -174,6 +176,9 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
                     src={cardData.photoUrl} 
                     alt={cardData.fullName}
                     className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-white/40 shadow-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?auto=format&fit=crop&q=80&w=400';
+                    }}
                   />
                   <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-[9px] font-bold">
                     ✓
@@ -292,12 +297,17 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
               {/* Secure QR Code Scanner Box */}
               <button
                 type="button"
+                id="btn-card-face-qr-code"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onOpenPublicWebView();
+                  if (onOpenDynamicQR) {
+                    onOpenDynamicQR();
+                  } else {
+                    onOpenPublicWebView();
+                  }
                 }}
-                className="shrink-0 p-2 rounded-2xl bg-white text-slate-900 shadow-md flex flex-col items-center hover:scale-105 transition-transform group/qr"
-                title="Scan or preview responder web view"
+                className="shrink-0 p-2 rounded-2xl bg-white text-slate-900 shadow-md flex flex-col items-center hover:scale-105 transition-transform group/qr cursor-pointer"
+                title={language === 'ar' ? 'عرض ومسح رمز QR الطبي التفاعلي' : 'Scan or view dynamic medical QR code'}
               >
                 <QrCode className="w-9 h-9 text-slate-900" />
                 <span className="text-[8px] font-black text-slate-700 mt-0.5 tracking-tighter">EMG QR</span>
@@ -481,26 +491,38 @@ export const DigitalWalletCard: React.FC<DigitalWalletCardProps> = ({
 
           <button
             type="button"
-            id="btn-preview-public-web-view"
-            onClick={onOpenPublicWebView}
-            className="py-3 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-colors"
+            id="btn-preview-dynamic-qr"
+            onClick={onOpenDynamicQR || onOpenPublicWebView}
+            className="py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95 cursor-pointer"
           >
-            <QrCode className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-            <span>{t.previewPublicWeb}</span>
+            <QrCode className="w-4 h-4 text-slate-950" />
+            <span>{language === 'ar' ? 'رمز QR الطبي' : 'Medical QR'}</span>
           </button>
         </div>
 
-        {onOpenPrintModal && (
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
-            id="btn-open-print-preview-bottom"
-            onClick={onOpenPrintModal}
-            className="w-full py-2.5 px-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+            id="btn-preview-public-web-view"
+            onClick={onOpenPublicWebView}
+            className="py-2 px-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-colors"
           >
-            <Printer className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-            <span>{language === 'ar' ? 'طباعة تقرير الطوارئ الطبي (PDF / A4)' : 'Print Emergency Medical Sheet (PDF / A4)'}</span>
+            <Globe className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+            <span>{t.previewPublicWeb}</span>
           </button>
-        )}
+
+          {onOpenPrintModal ? (
+            <button
+              type="button"
+              id="btn-open-print-preview-bottom"
+              onClick={onOpenPrintModal}
+              className="py-2 px-3 rounded-2xl bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-98"
+            >
+              <Printer className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span>{language === 'ar' ? 'طباعة PDF' : 'Print PDF'}</span>
+            </button>
+          ) : null}
+        </div>
       </div>
 
     </div>

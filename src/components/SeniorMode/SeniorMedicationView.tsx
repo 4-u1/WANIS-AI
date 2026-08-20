@@ -124,7 +124,7 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
               type="button"
               id="btn-trigger-pending-toast-banner"
               onClick={handleTriggerAllPending}
-              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition-transform active:scale-95 react-btn-tap cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span>{language === 'ar' ? 'إرسال تنبيه بالجرعات' : 'Send Reminder Toast'}</span>
@@ -136,7 +136,7 @@ export const SeniorMedicationView: React.FC<SeniorMedicationViewProps> = ({
               type="button"
               id="btn-open-reminder-center"
               onClick={onOpenReminderModal}
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/20 transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-white/20 transition-all react-btn-tap cursor-pointer active:scale-95"
             >
               <Bell className="w-4 h-4 text-teal-300" />
               <span>{language === 'ar' ? 'مركز التنبيهات والسجل' : 'Reminders & History'}</span>

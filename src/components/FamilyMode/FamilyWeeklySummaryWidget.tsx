@@ -151,7 +151,7 @@ export const FamilyWeeklySummaryWidget: React.FC<FamilyWeeklySummaryWidgetProps>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold text-base sm:text-lg tracking-tight text-white">
-                {language === 'ar' ? 'ملخص الأداء والمقارنة الأسبوعية (Week-over-Week)' : '7-Day Care & Weekly Performance Summary'}
+                {language === 'ar' ? 'ملخص الأداء والمقارنة الأسبوعية' : '7-Day Care & Weekly Performance Summary'}
               </h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-teal-400/20 text-teal-300 border border-teal-400/30">
                 {viewMode === 'COMPARE' 

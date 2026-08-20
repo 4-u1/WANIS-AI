@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import { z } from "zod";
 import { saveCheckin, getRecentCheckins, getSenior } from "./src/db";
 
 dotenv.config();
@@ -11,7 +12,258 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-app.use(express.json({ limit: "10mb" }));
+// Security 1: Reduced payload limit to 256KB to strictly prevent Memory Exhaustion & DoS
+app.use(express.json({ limit: "256kb" }));
+
+// Standardized Unified API Error Response Factory (DRY)
+export function sendApiError(
+  res: express.Response,
+  status: number,
+  code: string,
+  error: string,
+  message: string,
+  details?: Array<{ field: string; message: string; code?: string }>,
+  extra?: Record<string, any>
+) {
+  return res.status(status).json({
+    success: false,
+    error,
+    message,
+    code,
+    details: details || [],
+    timestamp: new Date().toISOString(),
+    ...extra
+  });
+}
+
+// Payload size & JSON format error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && (err.type === "entity.too.large" || err.status === 413)) {
+    return sendApiError(
+      res,
+      413,
+      "PAYLOAD_TOO_LARGE",
+      "Payload Too Large",
+      "The request body exceeds the 256KB safety limit."
+    );
+  }
+  if (err instanceof SyntaxError && "body" in err) {
+    return sendApiError(
+      res,
+      400,
+      "INVALID_JSON",
+      "Invalid JSON",
+      "Malformed JSON payload provided."
+    );
+  }
+  next(err);
+});
+
+// Security 2: Security Headers & Cookie Policy Middleware (SameSite=Strict)
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+
+  // Intercept Set-Cookie to guarantee SameSite=Strict, Secure, and HttpOnly across the entire app
+  const originalSetHeader = res.setHeader.bind(res);
+  res.setHeader = function (name: string, value: any) {
+    if (name.toLowerCase() === "set-cookie") {
+      const isProd = process.env.NODE_ENV === "production";
+      const secureAttr = isProd ? "; Secure" : "";
+      if (Array.isArray(value)) {
+        value = value.map(cookieStr => {
+          if (typeof cookieStr === "string" && !cookieStr.includes("SameSite=")) {
+            return `${cookieStr}; SameSite=Strict${secureAttr}; HttpOnly; Path=/`;
+          }
+          return cookieStr;
+        });
+      } else if (typeof value === "string" && !value.includes("SameSite=")) {
+        value = `${value}; SameSite=Strict${secureAttr}; HttpOnly; Path=/`;
+      }
+    }
+    return originalSetHeader(name, value);
+  };
+
+  next();
+});
+
+// Security 3: Sliding-Window Rate Limiter Middleware to Prevent API Quota Exhaustion
+interface RateLimitBucket {
+  count: number;
+  resetTime: number;
+}
+const requestCounts = new Map<string, RateLimitBucket>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
+const MAX_REQUESTS_PER_WINDOW = 45; // 45 AI generation requests per minute per IP
+
+const apiRateLimiter = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const ip = req.ip || req.socket.remoteAddress || "client-local";
+  const now = Date.now();
+  let clientRecord = requestCounts.get(ip);
+
+  if (!clientRecord || now > clientRecord.resetTime) {
+    clientRecord = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    requestCounts.set(ip, clientRecord);
+  } else {
+    clientRecord.count += 1;
+  }
+
+  const remaining = Math.max(0, MAX_REQUESTS_PER_WINDOW - clientRecord.count);
+  const resetInSecs = Math.ceil((clientRecord.resetTime - now) / 1000);
+
+  // Standard Rate Limit Headers
+  res.setHeader("X-RateLimit-Limit", MAX_REQUESTS_PER_WINDOW.toString());
+  res.setHeader("X-RateLimit-Remaining", remaining.toString());
+  res.setHeader("X-RateLimit-Reset", resetInSecs.toString());
+
+  if (clientRecord.count > MAX_REQUESTS_PER_WINDOW) {
+    res.setHeader("Retry-After", resetInSecs.toString());
+    return sendApiError(
+      res,
+      429,
+      "RATE_LIMIT_EXCEEDED",
+      "Too Many Requests",
+      "AI service request rate limit exceeded to protect quota. Please try again in a moment.",
+      [],
+      { retryAfterSeconds: resetInSecs }
+    );
+  }
+
+  next();
+};
+
+// Security 4: Custom Header Verification Middleware (CSRF & Origin protection)
+const verifySecurityHeaders = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const requestedWith = req.headers["x-requested-with"];
+
+  if (!requestedWith || requestedWith !== "WanisAI-Client") {
+    return sendApiError(
+      res,
+      403,
+      "SECURITY_HEADER_REQUIRED",
+      "Forbidden: Missing or invalid security header",
+      "All API requests must include 'X-Requested-With: WanisAI-Client' to prevent CSRF and unauthorized cross-origin requests."
+    );
+  }
+
+  next();
+};
+
+// Apply Rate Limiting & Header Validation to all Gemini AI endpoints
+app.use("/api/gemini", apiRateLimiter, verifySecurityHeaders);
+
+// ==========================================
+// Security 5: Zod Input Validation & Sanitization Schemas (Clean & DRY)
+// ==========================================
+// Reusable sanitizer transformer: strips hidden ASCII control codes, trims whitespace, enforces bounds
+const sanitizeString = (max: number = 2000) =>
+  z.string({ message: "Must be a valid string" })
+    .trim()
+    .max(max, `Input exceeds maximum allowed safety limit of ${max} characters`)
+    .transform((str) => str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ""));
+
+const LanguageSchema = z.enum(["ar", "en", "fr"], {
+  message: "Language must be 'ar', 'en', or 'fr'"
+}).default("ar");
+
+export const AnalyzeCheckinSchema = z.object({
+  transcript: sanitizeString(3000),
+  language: LanguageSchema.optional(),
+  seniorProfile: z.object({
+    name: sanitizeString(100).optional(),
+    age: z.number().int().min(40).max(125).optional(),
+    primaryDialect: sanitizeString(50).optional(),
+    riskTier: sanitizeString(50).optional()
+  }).passthrough().optional(),
+  seniorId: sanitizeString(100).optional(),
+  recentHistory: z.array(z.any()).max(10).optional()
+});
+
+export const DoctorBriefSchema = z.object({
+  seniorName: sanitizeString(100).optional(),
+  age: z.number().int().min(0).max(130).optional(),
+  periodDays: z.number().int().min(1).max(90).optional().default(14),
+  longitudinalSignals: z.record(z.string(), z.any()).optional(),
+  medications: z.array(z.any()).max(50).optional(),
+  acbScore: z.number().min(0).max(50).optional(),
+  keyConcerns: z.array(sanitizeString(500)).max(20).optional()
+});
+
+export const MedicationRiskSchema = z.object({
+  medications: z.array(
+    z.union([
+      sanitizeString(100),
+      z.object({
+        name: sanitizeString(100),
+        dosage: sanitizeString(50).optional(),
+        frequency: sanitizeString(50).optional(),
+        indication: sanitizeString(100).optional(),
+        acbScore: z.number().optional()
+      }).passthrough()
+    ])
+  ).max(50)
+});
+
+export const RufqaAssistSchema = z.object({
+  userMessage: sanitizeString(1000),
+  location: z.union([sanitizeString(200), z.record(z.string(), z.any())]).optional(),
+  pilgrimProfile: z.record(z.string(), z.any()).optional(),
+  language: LanguageSchema.optional()
+});
+
+export const ChatSchema = z.object({
+  message: sanitizeString(2000),
+  language: LanguageSchema.optional(),
+  context: z.record(z.string(), z.any()).optional()
+});
+
+export const ClinicalCopilotSchema = z.object({
+  query: sanitizeString(2000),
+  patientContext: z.record(z.string(), z.any()).optional(),
+  medications: z.array(z.any()).max(50).optional(),
+  acbScore: z.number().min(0).max(50).optional(),
+  language: LanguageSchema.optional()
+});
+
+export const FamilyAdvisorSchema = z.object({
+  seniorProfile: z.record(z.string(), z.any()).optional(),
+  recentCheckins: z.array(z.any()).max(20).optional(),
+  totalAcbScore: z.number().min(0).max(50).optional(),
+  language: LanguageSchema.optional()
+});
+
+export const CognitiveExerciseSchema = z.object({
+  topicType: z.enum(["nostalgia", "proverbs", "sensory_memories", "gratitude"]).optional().default("nostalgia"),
+  language: LanguageSchema.optional(),
+  seniorName: sanitizeString(100).optional().default("فاطمة")
+});
+
+// Generic Zod Validation Middleware Factory (DRY + Consistent Output Payload)
+function validateBody<T extends z.ZodTypeAny>(schema: T) {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const details = parseResult.error.issues.map(issue => ({
+        field: issue.path.length > 0 ? issue.path.join(".") : "root",
+        message: issue.message,
+        code: issue.code
+      }));
+      return sendApiError(
+        res,
+        400,
+        "INVALID_INPUT_SCHEMA",
+        "Validation Error",
+        "One or more input parameters failed validation checks.",
+        details
+      );
+    }
+    // Set sanitized, typed, and stripped payload directly on req.body
+    req.body = parseResult.data;
+    next();
+  };
+}
 
 // Lazy initialization of Gemini Client
 let geminiClient: GoogleGenAI | null = null;
@@ -72,8 +324,34 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     service: "WanisAI Senior Cognitive Health Intelligence Platform",
     version: "2.4.0",
+    securityPolicy: {
+      customHeadersRequired: ["X-Requested-With: WanisAI-Client"],
+      cookiePolicy: "SameSite=Strict; HttpOnly; Secure",
+      rateLimiting: "45 requests/minute/IP",
+      payloadLimit: "256KB",
+      schemaValidation: "Zod 3.x"
+    },
     geminiConfigured: !!process.env.GEMINI_API_KEY,
     timestamp: new Date().toISOString()
+  });
+});
+
+// Authentication & Session Endpoint with SameSite=Strict Cookie Policy
+app.post("/api/auth/session", (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  const sessionToken = crypto.randomBytes(24).toString("hex");
+
+  // Set SameSite=Strict, Secure, HttpOnly Session Cookie
+  res.setHeader(
+    "Set-Cookie",
+    `wanis_auth_session=${sessionToken}; Max-Age=86400; Path=/; SameSite=Strict${isProd ? "; Secure" : ""}; HttpOnly`
+  );
+
+  res.json({
+    success: true,
+    message: "Secure session initialized",
+    cookiePolicy: "SameSite=Strict; HttpOnly" + (isProd ? "; Secure" : ""),
+    authenticated: true
   });
 });
 
@@ -105,7 +383,7 @@ function getCheckinFallback(transcript: string, language: string) {
 }
 
 // Endpoint 1: Analyze Senior Check-in
-app.post("/api/gemini/analyze-checkin", async (req, res) => {
+app.post("/api/gemini/analyze-checkin", validateBody(AnalyzeCheckinSchema), async (req, res) => {
   const { transcript, language = "ar", seniorProfile, seniorId } = req.body;
 
   if (!transcript) {
@@ -263,7 +541,7 @@ function getDoctorBriefFallback(seniorName?: string, age?: number, periodDays: n
 }
 
 // Endpoint 2: Doctor Brief 2.0
-app.post("/api/gemini/doctor-brief", async (req, res) => {
+app.post("/api/gemini/doctor-brief", validateBody(DoctorBriefSchema), async (req, res) => {
   const { seniorName, age, periodDays = 14, longitudinalSignals, medications, acbScore, keyConcerns } = req.body;
   const ai = getGeminiClient();
 
@@ -357,7 +635,7 @@ function getMedicationRiskFallback() {
 }
 
 // Endpoint 3: Medication Cognitive Risk & ACB Intelligence
-app.post("/api/gemini/medication-risk", async (req, res) => {
+app.post("/api/gemini/medication-risk", validateBody(MedicationRiskSchema), async (req, res) => {
   const { medications } = req.body;
   const ai = getGeminiClient();
 
@@ -430,7 +708,7 @@ function getRufqaFallback(language: string = "ar") {
 }
 
 // Endpoint 4: Rufqa Pilgrimage Companion Guidance
-app.post("/api/gemini/rufqa-assist", async (req, res) => {
+app.post("/api/gemini/rufqa-assist", validateBody(RufqaAssistSchema), async (req, res) => {
   const { userMessage, location, pilgrimProfile, language = "ar" } = req.body;
   const ai = getGeminiClient();
 
@@ -497,7 +775,7 @@ function getCompanionChatFallback(language: string = "ar") {
 }
 
 // Endpoint 5: Companion Voice/Text Chat
-app.post("/api/gemini/chat", async (req, res) => {
+app.post("/api/gemini/chat", validateBody(ChatSchema), async (req, res) => {
   const { message, language = "ar", context } = req.body;
   const ai = getGeminiClient();
 
@@ -538,7 +816,7 @@ Senior's message: "${message}"`;
 });
 
 // Endpoint 6: Clinical Geriatric Copilot & Deprescribing Advisor (Clinician Mode)
-app.post("/api/gemini/clinical-copilot", async (req, res) => {
+app.post("/api/gemini/clinical-copilot", validateBody(ClinicalCopilotSchema), async (req, res) => {
   const { query, patientContext, medications, acbScore, language = "en" } = req.body;
   const ai = getGeminiClient();
 
@@ -601,7 +879,7 @@ Respond in JSON format:
 });
 
 // Endpoint 7: Family Care Circle AI Advisor & Insights
-app.post("/api/gemini/family-advisor", async (req, res) => {
+app.post("/api/gemini/family-advisor", validateBody(FamilyAdvisorSchema), async (req, res) => {
   const { seniorProfile, recentCheckins, totalAcbScore, language = "ar" } = req.body;
   const ai = getGeminiClient();
 
@@ -670,7 +948,7 @@ Respond in JSON:
 });
 
 // Endpoint 8: Cognitive Stimulation & Nostalgic Dialogue (Senior Mode)
-app.post("/api/gemini/cognitive-exercise", async (req, res) => {
+app.post("/api/gemini/cognitive-exercise", validateBody(CognitiveExerciseSchema), async (req, res) => {
   const { topicType = "nostalgia", language = "ar", seniorName = "فاطمة" } = req.body;
   const ai = getGeminiClient();
 

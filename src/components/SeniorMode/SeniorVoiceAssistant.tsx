@@ -189,7 +189,7 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
           type="button"
           onClick={handleStartCognitiveExercise}
           disabled={isLoading || isExercising}
-          className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold flex items-center gap-1.5 shrink-0 shadow-xs hover:opacity-95 transition-all disabled:opacity-50 active:scale-95"
+          className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold flex items-center gap-1.5 shrink-0 shadow-xs hover:opacity-95 transition-all disabled:opacity-50 react-btn-tap cursor-pointer active:scale-95"
         >
           <BrainCircuit className="w-3.5 h-3.5" />
           <span>{language === 'ar' ? 'جلسة تنشيط الذاكرة والحديث' : 'Memory Stimulation Session'}</span>
@@ -198,7 +198,7 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
           <button
             key={i}
             onClick={() => handleSendMessage(topic)}
-            className="text-xs px-3 py-1.5 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:border-teal-500 shrink-0 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:border-teal-500 shrink-0 transition-colors react-btn-tap cursor-pointer active:scale-95"
           >
             {topic}
           </button>
@@ -220,7 +220,7 @@ export const SeniorVoiceAssistant: React.FC<SeniorVoiceAssistantProps> = ({
           id="companion-send-btn"
           onClick={() => handleSendMessage()}
           disabled={isLoading || !inputText.trim()}
-          className="p-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold disabled:opacity-40 transition-colors"
+          className="p-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold disabled:opacity-40 transition-all react-btn-tap cursor-pointer active:scale-95"
         >
           <Send className="w-5 h-5" />
         </button>

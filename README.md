@@ -18,8 +18,8 @@
 </p>
 
 <p align="center">
-  <b>منصة سريرية متقدمة مبنية بذكاء اصطناعي مسؤول لرصد المؤشرات المعرفية المبكرة، إدارة العبء الكوليني للأدوية (ACB)، وتنسيق دوائر الرعاية الأسرية والطبية في العالم العربي.</b><br>
-  <i>A clinically responsible, culturally attuned AI ecosystem providing early cognitive variance tracking, Anticholinergic Burden computation, automated Care Circle triage escalation, and Hajj/Umrah pilgrim safety.</i>
+  <b>منصة سريرية متقدمة مبنية بذكاء اصطناعي مسؤول لرصد المؤشرات المعرفية المبكرة، إدارة العبء الكوليني للأدوية (ACB)، وتنسيق دوائر الرعاية الأسرية والطبية في العالم العربي وخدمة ضيوف الرحمن.</b><br>
+  <i>A clinically responsible, culturally attuned AI ecosystem providing early cognitive variance tracking, Anticholinergic Burden computation, automated Care Circle triage escalation, biometric emergency identification, and Hajj/Umrah pilgrim safety.</i>
 </p>
 
 </div>
@@ -34,10 +34,11 @@
   - [3.1 فحص الاطمئنان الصوتي الذكي | Daily Voice Check-in](#31-فحص-الاطمئنان-الصوتي-الذكي--daily-voice-check-in)
   - [3.2 بروتوكول إشعارات دائرة الرعاية | Automated Care Circle Alerts](#32-بروتوكول-إشعارات-دائرة-الرعاية--automated-care-circle-alerts)
   - [3.3 ملخص العافية اليومي | Daily Wellness Summary](#33-ملخص-العافية-اليومي--daily-wellness-summary)
-  - [3.4 محرك العبء المعرفي للأدوية | ACB Risk Engine](#34-محرك-العبء-المعرفي-للأدوية--acb-risk-engine)
-  - [3.5 موجز الطبيب السريري 2.0 | Doctor Brief 2.0](#35-موجز-الطبيب-السريري-20--doctor-brief-20)
-  - [3.6 رفيق الحج والعمرة (رفقة) | Rufqa Pilgrim Safety](#36-رفيق-الحج-والعمرة-رفقة--rufqa-pilgrim-safety)
-  - [3.7 محرك دورة الرعاية الثمانية | 8-Stage Continuous Care Loop](#37-محرك-دورة-الرعاية-الثمانية--8-stage-continuous-care-loop)
+  - [3.4 محرك العبء المعرفي للأدوية ومركز التنبيهات | ACB Risk Engine & Medication Center](#34-محرك-العبء-المعرفي-للأدوية-ومركز-التنبيهات--acb-risk-engine--medication-center)
+  - [3.5 بطاقة الطوارئ الرقمية والتحقق البيومتري | Digital Emergency ID & Bio-Camera Capture](#35-بطاقة-الطوارئ-الرقمية-والتحقق-البيومتري--digital-emergency-id--bio-camera-capture)
+  - [3.6 موجز الطبيب السريري 2.0 | Doctor Brief 2.0](#36-موجز-الطبيب-السريري-20--doctor-brief-20)
+  - [3.7 رفيق الحج والعمرة (رفقة) | Rufqa Pilgrim Safety](#37-رفيق-الحج-والعمرة-رفقة--rufqa-pilgrim-safety)
+  - [3.8 محرك دورة الرعاية الثمانية | 8-Stage Continuous Care Loop](#38-محرك-دورة-الرعاية-الثمانية--8-stage-continuous-care-loop)
 - [4. مصفوفة التصنيف والفرز السريري | Clinical Triage Matrix](#4-مصفوفة-التصنيف-والفرز-السريري--clinical-triage-matrix)
 - [5. حوكمة البيانات والخصوصية | Data Governance & Consent Matrix](#5-حوكمة-البيانات-والخصوصية--data-governance--consent-matrix)
 - [6. التقنيات والمكتبات المعتمدة | Tech Stack & Tooling](#6-التقنيات-والمكتبات-المعتمدة--tech-stack--tooling)
@@ -55,8 +56,9 @@
 يقدم **WANIS-AI (ونيس)** نموذجاً ابتكارياً رائداً يجمع بين:
 1. **الواجهة الطبيعية الفائقة البساطة**: التفاعل الصوتي الدافئ باللهجات المحلية دون الحاجة لأي معرفة تقنية مسبقة.
 2. **الذكاء السريري القائم على الأدلة**: حساب مؤشر **Anticholinergic Cognitive Burden (ACB)** لتفادي التدهور المعرفي والتشوش الذهني الناتج عن تراكم الأدوية.
-3. **التنبيه الاستباقي المؤتمت**: رصد تحولات الفرز السريري (من الاستقرار `GREEN` إلى التغير `YELLOW` أو الطوارئ `RED`) وإرسال إشعارات لحظية متعددة القنوات.
-4. **حفظ الكرامة والخصوصية**: مصفوفة موافقات ثلاثية المستويات تفصل بين الحوارات الشخصية المشفرة والموجزات الموجهة للعائلة والتقارير الطبية.
+3. **التنبيه الاستباقي المؤتمت**: رصد تحولات الفرز السريري (من الاستقرار `GREEN` إلى التغير `YELLOW` أو الطوارئ `RED`) وإرسال إشعارات لحظية متعددة القنوات مصحوبة بنغمات توافقية متقدمة.
+4. **بطاقة الطوارئ الرقمية والالتقاط البيومتري**: واجهة محاكاة كاميرا طبية متقدمة لتحديث الصورة الشخصية والتحقق الفوري من هوية كبير السن عند الطوارئ عبر 6 لغات.
+5. **حفظ الكرامة والخصوصية**: مصفوفة موافقات ثلاثية المستويات تفصل بين الحوارات الشخصية المشفرة والموجزات الموجهة للعائلة والتقارير الطبية المتوافقة مع نظام حماية البيانات الشخصية السعودي (PDPL).
 
 ---
 
@@ -72,8 +74,9 @@
              ┌─────────────────────┐                       ┌─────────────────────┐
              │   👵 SENIOR CLIENT  │                       │  👨‍👩‍👧 FAMILY & CLINIC │
              │  Voice Check-in UI  │                       │  Dashboard / Brief  │
+             │  Bio-ID Camera Cam  │                       │  Care Circle Triage │
              └──────────┬──────────┘                       └──────────▲──────────┘
-                        │ (Audio / Transcript)                        │
+                        │ (Audio / Transcript / Photo)                │
                         ▼                                             │ (SSE / WebSockets)
              ┌────────────────────────────────────────────────────────┴──────────┐
              │                     EXPRESS.JS BACKEND GATEWAY                    │
@@ -129,34 +132,48 @@
 
 ---
 
-### 3.4 محرك العبء المعرفي للأدوية | ACB Risk Engine
+### 3.4 محرك العبء المعرفي للأدوية ومركز التنبيهات | ACB Risk Engine & Medication Center
 * **الوقاية من التدهور المعرفي (Anticholinergic Cognitive Burden)**:
   * حساب التراكم الكوليني للأدوية اليومية وفق المعايير السريرية المعتمدة عالمياً.
   * تنبيه الأطباء والعائلة عند تجاوز المؤشر للحد الحرج (Score ≥ 3).
-* **مركز التذكير بالأدوية**:
+* **مركز التذكير بالأدوية وإدارة الإشعارات (`MedicationReminderCenterModal`)**:
   * واجهة بصرية مزودة بصور حقيقية للأقراص والجرعات لتفادي الالتباس.
-  * تأكيد التناول الصوتي وتحديث حالة الالتزام اللحظي.
+  * إطلاق التنبيهات الفورية الصوتية مع قراءة الجرعة صوتياً والتأكيد بلمسة واحدة.
+  * مؤشر المزامنة السحابية وسجل التاريخ الكامل للالتزام.
 
 ---
 
-### 3.5 موجز الطبيب السريري 2.0 | Doctor Brief 2.0
+### 3.5 بطاقة الطوارئ الرقمية والتحقق البيومتري | Digital Emergency ID & Bio-Camera Capture
+* **حاوية الصورة الشخصية والتحقق الميداني**:
+  * عرض الصورة الشخصية لكبير السن مع شارة التحقق البيومتري المعتمدة للمسعفين وفصيلة الدم ورقم الهوية الوطنية/الإقامة.
+* **محاكي الكاميرا الطبية البيومترية (`CameraCaptureModal`)**:
+  * دعم كامل لتشغيل كاميرا الجهاز الحقيقية أو تفعيل محاكي الالتقاط التفاعلي عالي الدقة.
+  * دليل ضبط ومحاذاة الوجه البيضاوي (Facial Alignment Guide).
+  * محاكاة الفلاش البصري وصوت الغالق (Shutter Audio Tone via Web Audio).
+  * مؤقت ذاتي للالتقاط (3s Self Timer)، تبديل العدسات، وخيارات رفع الصور الجاهزة.
+  * تسجيل فوري لعمليات التحديث في سجل المراقبة والأمان (Access Audit Logs).
+* **دعم اللغات الست وسرعة الوصول**:
+  * عرض البيانات السريرية الحرجة بست لغات (العربية، الإنجليزية، الفرنسية، الأردية، الإندونيسية، والتركية).
+
+---
+
+### 3.6 موجز الطبيب السريري 2.0 | Doctor Brief 2.0
 * **تقرير 30/90 يوماً الجاهز للعيادة**: تلخيص المنحنيات المعرفية، استقرار النوم، والالتزام الدوائي قبل موعد الطبيب.
 * **التصدير والطباعة الموثقة**: تصدير بصيغة PDF مع الختم الرقمي والتشفير السريري لتسهيل إدراج التقرير في الملف الطبي الإلكتروني (EMR).
 
 ---
 
-### 3.6 رفيق الحج والعمرة (رفقة) | Rufqa Pilgrim Safety
+### 3.7 رفيق الحج والعمرة (رفقة) | Rufqa Pilgrim Safety
 * **وضع التائه الذكي (Lost Mode)**:
   * تفعيل بث الطوارئ بمجرد الضغط على زر الاستغاثة.
   * إرسال الإحداثيات المباشرة لمطوف الحملة وأفراد الأسرة.
-* **بطاقة الطوارئ الرقمية سداسية اللغات**:
-  * دعم كامل لـ: العربية، الإنجليزية، الفرنسية، الأردية، الإندونيسية، والتركية.
+* **بطاقة الطوارئ الرقمية**:
   * إمكانية قراءة البطاقة والتحدث الصوتي ببيانات الحاج دون الحاجة لاتصال بالإنترنت.
 * **نقاط التجمع وبوابات الحرمين**: أدلة توجيهية مبسطة للعودة لمقر الإقامة بيسر وأمان.
 
 ---
 
-### 3.7 محرك دورة الرعاية الثمانية | 8-Stage Continuous Care Loop
+### 3.8 محرك دورة الرعاية الثمانية | 8-Stage Continuous Care Loop
 تخضع كل عملية فحص وتدخل لدورة حوكمة مغلقة ومسؤولة:
 $$\text{OBSERVE} \longrightarrow \text{UNDERSTAND} \longrightarrow \text{ASSESS} \longrightarrow \text{RECOMMEND} \longrightarrow \text{ACT} \longrightarrow \text{SHARE} \longrightarrow \text{FOLLOW-UP} \longrightarrow \text{LEARN}$$
 
@@ -205,7 +222,7 @@ $$\text{OBSERVE} \longrightarrow \text{UNDERSTAND} \longrightarrow \text{ASSESS}
 | **Styling Engine** | Tailwind CSS 4 | `@tailwindcss/vite` | تصميم عصري متجاوب يدعم RTL والوضع الليلي |
 | **AI SDK** | `@google/genai` | Modern SDK | التحليل الصوتي واستخراج المؤشرات السريرية عبر Gemini |
 | **Backend & Routing**| Express.js | `4.21.2` | خادم API آمن لمعالجة الطلبات وحماية المفاتيح السرية |
-| **Audio Engine** | Web Audio API | Native Browser | توليد النغمات الصوتية التوافقية متعددة الترددات |
+| **Audio Engine** | Web Audio API | Native Browser | توليد النغمات الصوتية التوافقية متعددة الترددات ونغمات الكاميرا |
 | **Bundler & Build** | Vite + ESBuild | `6.2.0` | حزم التطبيق بأعلى كفاءة لبيئات الحاويات السحابية |
 | **Icons & Visuals** | Lucide React | Latest | منظومة أيقونات متكاملة وموحدة |
 
@@ -223,9 +240,20 @@ WANIS-AI/
 │   │   ├── RufqaMode/               # رفيق الحج والعمرة (وضع التائه ونقاط الحرم)
 │   │   ├── OrchestratorMode/        # محرك دورة الرعاية الثمانية وسجل التدقيق المباشر
 │   │   ├── InvestorMode/            # الجناح الاستراتيجي ومؤشرات الأداء والقيمة المضافة
-│   │   ├── Notifications/           # بطاقات التنبيه اللحظية (CareCircleTriageToast, MedToast)
-│   │   ├── EmergencyCard/           # بطاقة الطوارئ الرقمية متعددة اللغات
+│   │   ├── Notifications/           # بطاقات التنبيه اللحظية ومركز تذكير الأدوية المنبثق
+│   │   │   ├── CareCircleTriageToast.tsx
+│   │   │   ├── MedicationToastNotification.tsx
+│   │   │   ├── MedicationReminderCenterModal.tsx
+│   │   │   └── MedicationCloudSyncIndicator.tsx
+│   │   ├── EmergencyCard/           # بطاقة الطوارئ الرقمية متعددة اللغات ومحاكي الكاميرا
+│   │   │   ├── CameraCaptureModal.tsx
+│   │   │   ├── DigitalWalletCard.tsx
+│   │   │   ├── EmergencyCardModal.tsx
+│   │   │   ├── EmergencyCardPrintModal.tsx
+│   │   │   ├── EmergencyFastView.tsx
+│   │   │   └── EmergencyResponderWebView.tsx
 │   │   ├── Walkthrough/             # الجولة التعريفية التفاعلية ومركز المساعدة
+│   │   ├── MobileBottomNav.tsx      # شريط التنقل السفلي للأجهزة الذكية
 │   │   └── Navbar.tsx               # شريط التنقل الرئيسي والتحكم باللغات والشخصيات
 │   ├── services/
 │   │   ├── api.ts                   # واجهة الاتصال بنماذج Gemini API وخادم Backend
